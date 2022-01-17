@@ -12,6 +12,11 @@ def file_load(number_lines):
     '''
     This function will take the dump.0 file that we will get by running the simulation,
     and will generate an .h5 file for future processing of the data.
+
+    number_lines: the number of lines to read from the `data.h5` file
+
+    return:
+    None
     '''
     path_data = os.path.join('./', 'data')
 
@@ -32,22 +37,7 @@ def file_load(number_lines):
     hf = h5py.File(os.path.join(path_data, 'data.h5'), 'w')
     hf.create_dataset('dataset_1', data=blocks)
     hf.close()
-
-    # sanity checks:
-
-    my_hf = h5py.File(os.path.join(path_data,'data.h5'), 'r')
-    n1 = my_hf.get('dataset_1')
-    blocks = np.array(n1)
-    my_hf.close()
-
-    print(blocks.shape)
-
-    print(blocks[0, 0])
-    print(blocks[0, 255])
-
-    print(blocks[1, 0])
-    print(blocks[1, 255])
-    
+     
     return None
 
 if __name__ == '__main__':

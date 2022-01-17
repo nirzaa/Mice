@@ -80,3 +80,4 @@ class Modely(nn.Module):
         x = x.view(-1, 1)
         # torch.Size([32, 1])
         return x
+        
