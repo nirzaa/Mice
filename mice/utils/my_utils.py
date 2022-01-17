@@ -13,6 +13,10 @@ import matplotlib.pyplot as plt
 class MiceDataset(Dataset):
     '''
     Defining the Dataset to be used in the DataLoader
+
+    x_joint: the lattices we got for the joint
+    x_product: the lattices we got for the product
+    n_samples: the number of lattices we got
     '''
 
     def __init__(self, x_joint, x_product):
@@ -29,6 +33,9 @@ class MiceDataset(Dataset):
 def read_data():
     '''
     Reading the data to train our neural net on
+
+    return:
+    blocks: the coordinates of our particles in different frames in time
     '''
     my_hf = h5py.File(os.path.join('./','data','data.h5'), 'r')
     n1 = my_hf.get('dataset_1')
@@ -39,6 +46,9 @@ def read_data():
 def frames():
     '''
     Calculating the number of frames in the input
+
+    return:
+    the number of frames
     '''
     blocks = read_data()
     num_frames = blocks.shape[0]  # number of frames in the input
@@ -51,6 +61,12 @@ def frames():
 def sizer(num_boxes, box_frac):
     '''
     Calculate the size for our boxes to split our space to
+    
+    num_boxes: the number of boxes we split our space to
+    box_frac: what is the value of the box from the total space we are calculating the mutual information to
+    
+    return:
+    the size of our box we are calculating the mutual information to
     '''
     x_size, y_size, z_size = int(np.floor(num_boxes*box_frac)), int(np.floor(num_boxes*box_frac)), int(np.floor(num_boxes*box_frac))
     x_size, y_size, z_size = x_size - x_size%2, y_size - y_size%2, z_size - z_size%2
@@ -62,6 +78,13 @@ def sizer(num_boxes, box_frac):
 def mi_model(genom, n_epochs, max_epochs):
     '''
     Declare the model and loading the weights if necessary
+    
+    genom: the type of architecture we will use for the neural net
+    n_epochs: number of epochs in the current run
+    max_epochs: the maximum number of epochs we are using at the start, before we are using transfer learning
+
+    return:
+    the relevant model loaded with its weights
     '''
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if torch.cuda.is_available():
@@ -115,37 +138,50 @@ def mi_model(genom, n_epochs, max_epochs):
 
     return model
 
-def boxes_maker(num_boxes, sample):
+@gin.configurable
+def boxes_maker(num_boxes, sample, flag):
     '''
     Generating the sliced box of the sample mentioned in {sample}
+    
+    num_boxes: the number of boxes we split our space to
+    sample: number of sample we chose randomly to take our data from
+    flag: whether to use the data from data.h5 (flag=0), random data (flag=1), or the data that reproduces log2 mutual information (flag=2)
+
+    return:
+    our splitted space into the number of boxes we defined
     '''
-    # borders = np.linspace(0, 1, num_boxes+1, endpoint=True)
-    # blocks = read_data()
-    # boxes_tensor = np.zeros((num_boxes, num_boxes, num_boxes))
+    if flag == 0:
+        borders = np.linspace(0, 1, num_boxes+1, endpoint=True)
+        blocks = read_data()
+        boxes_tensor = np.zeros((num_boxes, num_boxes, num_boxes))
 
-    # df_particles = pd.DataFrame(
-    #     blocks[sample],
-    #     columns=['X', 'Y', 'Z']
-    # )
+        df_particles = pd.DataFrame(
+            blocks[sample],
+            columns=['X', 'Y', 'Z']
+        )
 
-    # x_bin = borders.searchsorted(df_particles['X'].to_numpy())
-    # y_bin = borders.searchsorted(df_particles['Y'].to_numpy())
-    # z_bin = borders.searchsorted(df_particles['Z'].to_numpy())
+        x_bin = borders.searchsorted(df_particles['X'].to_numpy())
+        y_bin = borders.searchsorted(df_particles['Y'].to_numpy())
+        z_bin = borders.searchsorted(df_particles['Z'].to_numpy())
 
-    # g = dict((*df_particles.groupby([x_bin, y_bin, z_bin]),))
+        g = dict((*df_particles.groupby([x_bin, y_bin, z_bin]),))
 
-    # g_keys = list(g.keys())
+        g_keys = list(g.keys())
 
-    # for cntr, cor in enumerate(g_keys):
-    #     boxes_tensor[cor[0]-1, cor[1]-1, cor[2]-1] = 1
+        for cntr, cor in enumerate(g_keys):
+            boxes_tensor[cor[0]-1, cor[1]-1, cor[2]-1] = 1
 
-    # ===============================================================
+    elif flag == 1:
+        boxes_tensor = np.zeros((num_boxes, num_boxes, num_boxes))
+        flag_torch = torch.randint_like(torch.tensor(boxes_tensor), low=0, high=2)
+        boxes_tensor[flag_torch == 1] = 1
 
-    boxes_tensor = np.zeros((num_boxes, num_boxes, num_boxes))
-    i = np.random.randint(low=0, high=boxes_tensor.shape[0])
-    j = np.random.randint(low=0, high=boxes_tensor.shape[1])
-    k = np.random.randint(low=0, high=boxes_tensor.shape[2])
-    boxes_tensor[i, j, k] = 1
+    elif flag == 2:
+        boxes_tensor = np.zeros((num_boxes, num_boxes, num_boxes))
+        i = np.random.randint(low=0, high=boxes_tensor.shape[0])
+        j = np.random.randint(low=0, high=boxes_tensor.shape[1])
+        k = np.random.randint(low=0, high=boxes_tensor.shape[2])
+        boxes_tensor[i, j, k] = 1
     
     return boxes_tensor
 
@@ -153,6 +189,18 @@ def boxes_maker(num_boxes, sample):
 def lattices_generator(num_samples, samples_per_snapshot, R, num_frames, num_boxes, sizes, cntr=0, lattices=None):
     '''
     Generate the lattices that will be used in our neural net
+    
+    num_samples: number of samples we will have in each epoch
+    samples_per_snapshot: the number of samples to take from each snapshot
+    R: np.random.RandomState
+    num_frames: number of frames we have in the data, from it we will pick 1 frame randomly to take our data from
+    num_boxes: the number of boxes we split our space to
+    sizes: the sizes of the box we are calculating the mutual information to
+    cntr: just a counter
+    lattice: a list we will put the lattices we will construct into
+
+    return:
+    list of lattices we've constracted
     '''
     if lattices is None:
         lattices = []
@@ -187,6 +235,12 @@ def lattices_generator(num_samples, samples_per_snapshot, R, num_frames, num_box
 def lattice_splitter(lattices, axis):
     '''
     Here we are splitting the lattices given in {lattices} on the axis given in the {axis}
+    
+    lattices: list of the lattices we've constructed
+    axis: the axis we will split our lattices on
+
+    return:
+    left lattices and right lattices
     '''
     
     left_lattices, right_lattices = [], []
@@ -199,6 +253,14 @@ def lattice_splitter(lattices, axis):
 def loss_function(joint_output, product_output):
     """
     calculating the loss function
+    
+    joint_output: the joint lattices we've constructed
+    product_output: the product lattices we've constructed
+
+    return:
+    mutual: the mutual information
+    joint_output: the joint lattices we've constructed
+    exp_product: the exponent of the product_output 
     """
     exp_product = torch.exp(product_output)
     mutual = torch.mean(joint_output) - torch.log(torch.mean(exp_product))
@@ -207,6 +269,14 @@ def loss_function(joint_output, product_output):
 def train_one_epoch(model, data_loader, optimizer, ma_rate=0.01):
     '''
     train one epoch
+    
+    model: the model we will train
+    data_loader: the data_loader that keeps our data
+    optimizer: optimizer
+    ma_rate: used in order to calculate the loss function
+
+    return:
+    loss and mutual information
     '''
     model.train()
     total_loss = 0
@@ -219,6 +289,15 @@ def train_one_epoch(model, data_loader, optimizer, ma_rate=0.01):
 def train_one_step(model, data, optimizer, ma_rate, ma_et=1.0):
     '''
     train one batch in the epoch
+    
+    model: the model we will train
+    data_loader: the data_loader that keeps our data
+    optimizer: optimizer
+    ma_rate: used in order to calculate the loss function
+    ma_et: used in order to calculate the loss function
+
+    return:
+    loss and mutual information
     '''
     x_joint, x_product = data
     optimizer.zero_grad()
@@ -239,6 +318,13 @@ def train_one_step(model, data, optimizer, ma_rate, ma_et=1.0):
 def valid_one_epoch(model, data_loader, ma_rate=0.01):
     '''
     validation of one epoch
+    
+    model: the model we will train
+    data_loader: the data_loader that keeps our data
+    ma_rate: used in order to calculate the loss function
+
+    return:
+    loss and mutual information
     '''
     model.eval()
     total_loss = 0
@@ -252,6 +338,14 @@ def valid_one_epoch(model, data_loader, ma_rate=0.01):
 def valid_one_step(model, data, ma_rate, ma_et=1.0):
     '''
     validation of one batch in the epoch
+    
+    model: the model we will train
+    data_loader: the data_loader that keeps our data
+    ma_rate: used in order to calculate the loss function
+    ma_et: used in order to calculate the loss function
+
+    return:
+    loss and mutual information
     '''
     x_joint, x_product = data
     joint_output = model(x_joint.float())
@@ -268,6 +362,16 @@ def valid_one_step(model, data, ma_rate, ma_et=1.0):
 def func_fig(num, genom, num_boxes, train_losses, valid_losses):
     '''
     Plot and print the results
+    
+    num: number of the figure
+    genom: the type of architecture we've trained our neural net with
+    num_boxes: the number of boxes we split our space to
+    train_losses: the losses we got from training
+    valid_losses: the losses we got from validating
+
+    return:
+    mi_train: mutual information gained from training
+    mi_valid: mutual information gained from validating
     '''
     plt.figure(num=num)
     plt.title(f'Searching for perfect box number, try: {num_boxes} boxes')
@@ -286,7 +390,15 @@ def func_fig(num, genom, num_boxes, train_losses, valid_losses):
     return mi_train, mi_valid
 
 def folder_checker(path):
+    '''
+    if a folder in {path} does not exist, this function will create it
+
+    return:
+    None
+    '''
     isExist = os.path.exists(path)
     if not isExist:
         os.makedirs(path)
+    
+    return None
         

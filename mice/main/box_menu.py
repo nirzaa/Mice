@@ -13,6 +13,21 @@ from sklearn.model_selection import train_test_split
 
 @gin.configurable
 def box_runner(box_sizes, max_epochs, batch_size, freq_print, axis, genom, lr, weight_decay):
+    '''
+    Running the neural network in order to calculate the right number of boxes to split our space into
+    
+    box_sizes: the number of boxes in each axis to split our space into
+    max_epochs: the maximum number of epochs to use in the beginning
+    batch_size: the size of the batch
+    freq_print: the number of epochs between printing to the user the mutual information
+    axis: the axis we will split our boxes into, in order to calculate the mutual information
+    genom: the type of architecture we are going to use in the neural net
+    lr: the learning rate
+    weight_decay: regularization technique by adding a small penalty
+
+    return:
+    None
+    '''
     weights_path = os.path.join('./','model_weights')
     PATH = os.path.join(weights_path, genom+'_model_weights.pth')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -59,6 +74,7 @@ def box_runner(box_sizes, max_epochs, batch_size, freq_print, axis, genom, lr, w
         torch.save(model.state_dict(), PATH)
         mice.func_fig(num=0, genom=genom, num_boxes=num_boxes, train_losses=train_losses, valid_losses=valid_losses)
 
+    return None
 
 if __name__ == '__main__':
     mice.box_runner()

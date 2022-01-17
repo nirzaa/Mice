@@ -1,7 +1,7 @@
 import mice.main.box_menu
 
 box_runner.box_sizes = [4]
-box_runner.max_epochs = 3e2
+box_runner.max_epochs = 2e3
 box_runner.batch_size = 300
 box_runner.freq_print = 1e1
 box_runner.axis = 0
@@ -16,7 +16,7 @@ import mice.utils.my_utils
 sizer.box_frac = 1
 lattices_generator.num_samples = 2e2
 lattices_generator.samples_per_snapshot = 1e1
-
+boxes_maker.flag = 2 # 0 - from data.h5 || 1 - random || 2 - log2 
 
 #======================#
 
