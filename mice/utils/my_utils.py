@@ -9,6 +9,7 @@ from tqdm import tqdm
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
+import sys
 
 class MiceDataset(Dataset):
     '''
@@ -359,21 +360,23 @@ def valid_one_step(model, data, ma_rate, ma_et=1.0):
     loss_train = -(torch.mean(joint_output) - (1 / ma_et.mean()).detach() * torch.mean(exp_product))
     return loss_train, mutual
 
-def func_fig(num, genom, num_boxes, train_losses, valid_losses):
+@gin.configurable
+def box_fig(num, genom, num_boxes, train_losses, valid_losses, figsize):
     '''
-    Plot and print the results
+    Plot the results
     
     num: number of the figure
     genom: the type of architecture we've trained our neural net with
     num_boxes: the number of boxes we split our space to
     train_losses: the losses we got from training
     valid_losses: the losses we got from validating
+    figsize: the size of the figure
 
     return:
     mi_train: mutual information gained from training
     mi_valid: mutual information gained from validating
     '''
-    plt.figure(num=num)
+    plt.figure(num=num, figsize=figsize)
     plt.title(f'Searching for perfect box number, try: {num_boxes} boxes')
     plt.plot(train_losses, label='train')
     plt.plot(valid_losses, label='valid')
@@ -386,8 +389,207 @@ def func_fig(num, genom, num_boxes, train_losses, valid_losses):
     plt.figure(num=num).clear()
     plt.close(num)
     mi_train, mi_valid = train_losses[-1], valid_losses[-1]
-    print(f'The MI train for {num_boxes} boxes is: {mi_train}')
+    
     return mi_train, mi_valid
+
+@gin.configurable
+def box_fig_together(box_sizes, mi_num_box_dependant, mi_num_box_dependant_valid, genom, figsize):
+    '''
+    Plot the results together
+    
+    boxes_sizes: the sizes of the boxes we calculated for
+    mi_num_box_dependant: mutual informations were calculated for training
+    mi_num_box_dependant_valid: mutual informations were calculated for validation
+    genom: the type of architecture we've trained our neural net with
+    figsize: the size of the figure
+
+    return:
+    None
+    '''
+    plt.figure(num=len(box_sizes)+1, figsize=figsize)
+    plt.clf()
+    plt.xlabel('number of box splits of the biggest box')
+    plt.ylabel('Mutual Information')
+    plt.title('Box size searching: All the MI together')
+    plt.tight_layout()
+    plt.plot(box_sizes, mi_num_box_dependant, label=(genom + ' - train'))
+    plt.plot(box_sizes, mi_num_box_dependant_valid, label=(genom + ' - valid'))
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "box_size_search")
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
+
+    return None
+
+@gin.configurable
+def box_fig_running(box_sizes, mi_num_box_dependant, mi_num_box_dependant_valid, genom, figsize):
+    '''
+    Plot the results together while running the simulation
+    
+    boxes_sizes: the sizes of the boxes we calculated for
+    mi_num_box_dependant: mutual informations were calculated for training
+    mi_num_box_dependant_valid: mutual informations were calculated for validation
+    genom: the type of architecture we've trained our neural net with
+    figsize: the size of the figure
+
+    return:
+    None
+    '''
+    plt.figure(num=len(box_sizes)+2, figsize=figsize)
+    plt.clf()
+    plt.xlabel('number of box splits of the biggest box')
+    plt.ylabel('Mutual Information')
+    plt.title('Box size searching...')
+    plt.tight_layout()
+    plt.plot(box_sizes, mi_num_box_dependant, label=(genom + ' - train'))
+    plt.plot(box_sizes, mi_num_box_dependant_valid, label=(genom + ' - valid'))
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "box_size_search")
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
+
+    return None
+
+@gin.configurable
+def entropy_fig(num, genom, sizes, train_losses, valid_losses, figsize):
+    '''
+    Plot the results
+    
+    num: number of the figure
+    genom: the type of architecture we've trained our neural net with
+    sizes: the size of the small box
+    train_losses: the losses we got from training
+    valid_losses: the losses we got from validating
+    figsize: the size of the figure
+
+    return:
+    mi_train: mutual information gained from training
+    mi_valid: mutual information gained from validating
+    '''
+    x_size, y_size, z_size = sizes
+    plt.figure(num=num, figsize=figsize)
+    plt.clf()
+    plt.title(f'Calculating MI for: ({x_size}, {y_size}, {z_size}) shape box')
+    plt.plot(train_losses, label=(genom + ' - train'))
+    plt.plot(valid_losses, label=(genom + ' - valid'))
+    plt.ylabel('Loss')
+    plt.xlabel('epochs')
+    plt.legend()
+    saved_path = os.path.join('./', 'figures', "losses", "entropy_calculation", genom)
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path,str(x_size)+"_"+str(y_size)+"_"+str(z_size)))
+    plt.figure(num=num).clear()
+    plt.close(num)
+    mi_train, mi_valid = train_losses[-1], valid_losses[-1]
+    return mi_train, mi_valid
+
+@gin.configurable
+def entropy_fig_together(x_labels, mi_entropy_dependant, mi_entropy_dependant_valid, genom, figsize):
+    '''
+    Plot the results together
+    
+    x_labels: the sizes of the boxes of the calculation
+    mi_entropy_dependant: the mutual informations together of the training
+    mi_entropy_dependant_valid: the mutual informations together of the validation
+    genom: the type of architecture we've trained our neural net with
+    figsize: the size of the figure
+
+    return:
+    None
+    '''
+    plt.figure(num=len(x_labels)+1, figsize=figsize)
+    plt.clf()
+    plt.xlabel('size of the small box')
+    plt.ylabel('Mutual Information')
+    plt.title('entropy searching: All the MI together')
+    plt.tight_layout()
+    plt.plot(x_labels, mi_entropy_dependant, label=(genom + ' - train'))
+    plt.plot(x_labels, mi_entropy_dependant_valid, label=(genom + ' - valid'))
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "entropy_calculation")
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
+
+    return None
+@gin.configurable
+def entropy_fig_running(x_labels, mi_entropy_dependant, mi_entropy_dependant_valid, genom, figsize):
+    '''
+    Plot the results together while the simulation is running
+    
+    x_labels: the sizes of the boxes of the calculation
+    mi_entropy_dependant: the mutual informations together of the training
+    mi_entropy_dependant_valid: the mutual informations together of the validation
+    genom: the type of architecture we've trained our neural net with
+    figsize: the size of the figure
+
+    return:
+    None
+    '''
+    plt.figure(num=len(x_labels)+2, figsize=figsize)
+    plt.clf()
+    plt.xlabel('size of the small box')
+    plt.ylabel('Mutual Information')
+    plt.title('Entropy searching...')
+    plt.tight_layout()
+    plt.plot(x_labels, mi_entropy_dependant, label=(genom + ' - train'))
+    plt.plot(x_labels, mi_entropy_dependant_valid, label=(genom + ' - valid'))
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "entropy_calculation")
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
+
+@gin.configurable
+def logger(my_str, mod, flag=[], number_combinations=0, flag_message=0, num_boxes=0):
+    '''
+    prints the results
+
+    my_str: the string to be plotted
+    mod: mod 0 prints both | mod 1 : prints only output | mod 2 : prints only to file
+    flag: if it is first time printing
+    number_combinations: the lengh of our printing
+    flag_message: if we are printing the box size searching or the entropy calculation
+    '''
+    if flag_message == 0:
+        message_path = os.path.join('./', 'mice')
+        mice.folder_checker(message_path)
+        message_path = os.path.join(message_path, 'message_boxcalc.log')
+    elif flag_message == 1:
+        message_path = os.path.join('./', 'mice')
+        mice.folder_checker(message_path)
+        message_path = os.path.join(message_path, 'message_entropycalc.log')
+    try:
+        logger.counter += 1
+    except:
+        logger.counter = 0
+
+    if flag == []:
+        flag.append('stop')
+        log_file = open(message_path, "w")
+        sys.stdout = log_file
+        if flag_message == 0:
+            print(f'==== log file for the Mutual Information for different number of boxes ====\n\n'
+                f'We have {number_combinations} runs in total\n\n')
+        elif flag_message == 1:
+            print(f'==== log file for the Mutual Information for different box shapes ====\n\n'
+                f'We split our space into: {num_boxes} boxes.\nWe have {number_combinations} runs in total\n\n')
+        sys.stdout = sys.__stdout__
+        log_file.close()
+
+    if mod == 0:
+        log_file = open(message_path, "a+")
+        sys.stdout = log_file
+        print(logger.counter,". ",my_str,"\n")
+        sys.stdout = sys.__stdout__
+        log_file.close()
+        print(my_str)
+    elif mod == 1:
+        print(my_str)
+    elif mod == 2:
+        log_file = open(message_path, "a+")
+        sys.stdout = log_file
+        print(logger.counter,". ",my_str,"\n")
+        sys.stdout = sys.__stdout__
+        log_file.close()
 
 def folder_checker(path):
     '''
@@ -401,4 +603,28 @@ def folder_checker(path):
         os.makedirs(path)
     
     return None
+
+def sort_func(args):
+    '''
+    calculating the i*j*k of the input
+
+    return:
+    i*j*k
+    '''
+    i,j,k = args
+    return i*j*k
         
+def print_combinations(my_combinations):
+    '''
+    printing all of the combinations
+
+    my_combinations: or combinations
+
+    return:
+    None
+    '''
+    print(f'All of my combinations are:')
+    for i in my_combinations:
+        print(i)
+    return None
+
