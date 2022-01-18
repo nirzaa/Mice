@@ -24,12 +24,24 @@ from mice.utils.my_utils import(
     train_one_step,
     valid_one_epoch,
     valid_one_step,
-    func_fig,
-    folder_checker
+    box_fig,
+    box_fig_together,
+    box_fig_running,
+    entropy_fig,
+    entropy_fig_together,
+    entropy_fig_running,
+    folder_checker,
+    sort_func,
+    logger,
+    print_combinations
 )
 
 from mice.main.box_menu import(
     box_runner
+)
+
+from mice.main.entropy_menu import(
+    entropy_runner
 )
 
 from bin.load_data import(
