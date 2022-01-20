@@ -3,6 +3,16 @@
 Mice package give us the opportunity to calculate mutual information on the data.
 In this file we will explain the structure of the project and how to use it.
 
+Install the package by using: `pip install -e .`
+
+## Credits:
+
+1. This article was very helpful for me and deserves credit: [Creating a Package — The Hitchhiker's Guide to Packaging 1.0 documentation (the-hitchhikers-guide-to-packaging.readthedocs.io)](https://the-hitchhikers-guide-to-packaging.readthedocs.io/en/latest/creation.html)
+2. Very nice package: [google/gin-config: Gin provides a lightweight configuration framework for Python (github.com)](https://github.com/google/gin-config)
+   if you have bugs look at this page: [How to use google/gin-config with python? - Stack Overflow](https://stackoverflow.com/questions/52434701/how-to-use-google-gin-config-with-python)
+3. This video: [Automated Testing in Python with pytest, tox, and GitHub Actions - YouTube](https://www.youtube.com/watch?v=DhUpxWjOhME)
+   and this repository was very helpful too: [mCodingLLC/SlapThatLikeButton-TestingStarterProject: A starter project to show how to set up and use automated testing in Python (github.com)](https://github.com/mCodingLLC/SlapThatLikeButton-TestingStarterProject)
+
 ## Table of Contents
 
 [TOC]
@@ -40,6 +50,16 @@ All our functions that we are going to use inside the `main folder` will be plac
 ### model_weights
 
 The weights of our models will be saved to here.
+
+## Running tests
+
+Now one has the opportunity to run tests by using:
+
+1. `mypy src`
+2. `flake8 src`
+3. `pytest -vv -pdb`
+   p.s. nice article explaining about the flags for pytest: [My Most Used pytest Commandline Flags - Adam Johnson](https://adamj.eu/tech/2019/10/03/my-most-used-pytest-commandline-flags/)
+4. `tox`
 
 ## How to use the code
 
