@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 
 myenv/
+.tox/
 *.h5
 *.0
 
