@@ -1,6 +1,6 @@
 import mice.main.box_menu
 
-box_runner.box_sizes = [4,7]
+box_runner.box_sizes = [2,4]
 box_runner.max_epochs = 2e2
 box_runner.batch_size = 300
 box_runner.freq_print = 1e1
@@ -24,6 +24,8 @@ box_fig_running.figsize = (12, 6)
 entropy_fig.figsize = (12, 6)
 entropy_fig_together.figsize = (12, 6)
 entropy_fig_running.figsize = (12, 6)
+exp_ave.window_frac = 0.1
+lin_ave.window_frac = 0.1
 
 #======================#
 
@@ -43,4 +45,6 @@ entropy_runner.lr = 1e-3
 entropy_runner.weight_decay = 1e-4
 entropy_runner.batch_size = 300
 entropy_runner.freq_print = 1e1
+
+
 

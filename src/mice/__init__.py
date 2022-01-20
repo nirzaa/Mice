@@ -30,7 +30,9 @@ from mice.utils.my_utils import (
     folder_checker,
     sort_func,
     logger,
-    print_combinations
+    print_combinations,
+    exp_ave,
+    lin_ave
 )
 
 from mice.main.box_menu import (

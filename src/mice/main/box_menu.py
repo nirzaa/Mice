@@ -27,7 +27,7 @@ def box_runner(box_sizes, max_epochs, batch_size, freq_print, axis, genom, lr, w
     return:
     None
     '''
-    weights_path = os.path.join('./', 'model_weights')
+    weights_path = os.path.join('./', 'src', 'model_weights')
     PATH = os.path.join(weights_path, genom+'_model_weights.pth')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     R = np.random.RandomState(seed=0)
@@ -63,7 +63,6 @@ def box_runner(box_sizes, max_epochs, batch_size, freq_print, axis, genom, lr, w
             dataset_valid = mice.MiceDataset(x_joint=AB_joint_valid, x_product=AB_product_valid)
 
             loader = DataLoader(dataset=dataset_train, batch_size=batch_size, num_workers=0, shuffle=False)
-
             loss_train, mutual_train = mice.train_one_epoch(model=model, data_loader=loader, optimizer=optimizer)
             train_losses.append(mutual_train.cpu().detach().numpy())
 
@@ -76,6 +75,8 @@ def box_runner(box_sizes, max_epochs, batch_size, freq_print, axis, genom, lr, w
         mice.logger(f'MI train for {num_boxes} boxes is: {train_losses[-1]:.2f}\n'
                     f'The fraction we split to is: {box_frac}, therefore the small box size is: {x_size}x{y_size}x{z_size}', number_combinations=len(box_sizes), flag_message=0)
         torch.save(model.state_dict(), PATH)
+        train_losses = mice.exp_ave(data=train_losses)
+        # valid_losses = mice.exp_ave(data=valid_losses)
         mice.box_fig(num=0, genom=genom, num_boxes=num_boxes, train_losses=train_losses, valid_losses=valid_losses)
         mi_num_box_dependant.append(train_losses[-1])
         mi_num_box_dependant_valid.append(valid_losses[-1])

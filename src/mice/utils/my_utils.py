@@ -56,7 +56,6 @@ def frames():
           '='*50)
     return num_frames
 
-@gin.configurable
 def sizer(num_boxes, box_frac):
     '''
     Calculate the size for our boxes to split our space to
@@ -244,7 +243,6 @@ def lattice_splitter(lattices, axis):
     
     left_lattices, right_lattices = [], []
     for lattice in lattices:
-        print(f'lattice is: {lattice}')
         left_lattice, right_lattice = np.split(lattice, 2, axis=axis)
         left_lattices.append(left_lattice)
         right_lattices.append(right_lattice)
@@ -510,6 +508,7 @@ def entropy_fig_together(x_labels, mi_entropy_dependant, mi_entropy_dependant_va
     plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
 
     return None
+
 @gin.configurable
 def entropy_fig_running(x_labels, mi_entropy_dependant, mi_entropy_dependant_valid, genom, figsize):
     '''
@@ -626,3 +625,21 @@ def print_combinations(my_combinations):
     for i in my_combinations:
         print(i)
     return None
+
+@gin.configurable
+def exp_ave(data, window_frac):
+    data = np.array(data)
+    window = np.floor(data.shape[0] * window_frac).astype(int)
+    ave_arr = np.zeros((data.shape[0]))
+    mi = data[0]
+    alpha = 2 / float(window + 1)
+    for i in range(data.shape[0]):
+        mi =  ((data[i] - mi) * alpha) + mi
+        ave_arr[i] = mi
+    return ave_arr
+
+@gin.configurable
+def lin_ave(data, window_frac):
+    data = np.array(data)
+    window = np.floor(data.shape[0] * window_frac).astype(int)
+    return [np.mean(data[i:i+window]) for i in range(0,len(data)-window)]
