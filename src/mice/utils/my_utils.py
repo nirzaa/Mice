@@ -244,6 +244,7 @@ def lattice_splitter(lattices, axis):
     
     left_lattices, right_lattices = [], []
     for lattice in lattices:
+        print(f'lattice is: {lattice}')
         left_lattice, right_lattice = np.split(lattice, 2, axis=axis)
         left_lattices.append(left_lattice)
         right_lattices.append(right_lattice)
