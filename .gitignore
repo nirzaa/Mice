@@ -12,6 +12,7 @@ myenv/
 .tox/
 *.h5
 *.0
+ising_data/
 
 .Python
 build/
