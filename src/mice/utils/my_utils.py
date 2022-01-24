@@ -8,6 +8,7 @@ import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import sys
+import seaborn as sns
 
 class MiceDataset(Dataset):
     '''
@@ -89,7 +90,7 @@ def mi_model(genom, n_epochs, max_epochs):
         gpu_name = torch.cuda.get_device_name(0)
     else:
         gpu_name = "cpu"
-    weights_path = os.path.join('./','model_weights')
+    weights_path = os.path.join('./', 'src', 'model_weights')
 
     if genom == 'linear':
         model = mice.Net()
@@ -99,6 +100,9 @@ def mi_model(genom, n_epochs, max_epochs):
         model.to(device)
     elif genom == 'new_fcn':
         model = mice.Modely()
+        model.to(device)
+    elif genom == 'mice_conv':
+        model = mice.MiceConv()
         model.to(device)
 
     if n_epochs != max_epochs and genom == 'linear':
@@ -133,6 +137,17 @@ def mi_model(genom, n_epochs, max_epochs):
     elif n_epochs == max_epochs and genom == 'new_fcn':
         PATH = os.path.join(weights_path, 'new_fcn_model_weights.pth')
         print(f'==== new fcn ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
+
+    if n_epochs != max_epochs and genom == 'mice_conv':
+        print(f'==== mice_conv ====\nWeights have been loaded!\nWe are using {gpu_name}')
+        PATH = os.path.join(weights_path, 'mice_conv_model_weights.pth')
+        model = mice.Net()
+        model.load_state_dict(torch.load(PATH), strict=False)
+        model.eval()
+        model.to(device)
+    elif n_epochs == max_epochs and genom == 'mice_conv':
+        PATH = os.path.join(weights_path, 'mice_conv_model_weights.pth')
+        print(f'==== mice_conv ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
 
     return model
 
@@ -537,6 +552,38 @@ def entropy_fig_running(x_labels, mi_entropy_dependant, mi_entropy_dependant_val
     plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
 
 @gin.configurable
+def ising_fig(num, genom, T, train_losses, valid_losses, figsize):
+    '''
+    Plot the results
+    
+    num: number of the figure
+    genom: the type of architecture we've trained our neural net with
+    num_boxes: the number of boxes we split our space to
+    train_losses: the losses we got from training
+    valid_losses: the losses we got from validating
+    figsize: the size of the figure
+
+    return:
+    mi_train: mutual information gained from training
+    mi_valid: mutual information gained from validating
+    '''
+    plt.figure(num=num, figsize=figsize)
+    plt.title(f'Calculating the ising mi for T = {T}')
+    plt.plot(train_losses, label='train')
+    plt.plot(valid_losses, label='valid')
+    plt.ylabel('Loss')
+    plt.xlabel('epochs')
+    plt.legend()
+    saved_path = os.path.join('./', 'figures', "losses", "ising", genom)
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'ising_T='+str(T).replace('.','_')))
+    plt.figure(num=num).clear()
+    plt.close(num)
+    mi_train, mi_valid = train_losses[-1], valid_losses[-1]
+    
+    return mi_train, mi_valid
+
+@gin.configurable
 def logger(my_str, mod, flag=[], number_combinations=0, flag_message=0, num_boxes=0):
     '''
     prints the results
@@ -548,13 +595,18 @@ def logger(my_str, mod, flag=[], number_combinations=0, flag_message=0, num_boxe
     flag_message: if we are printing the box size searching or the entropy calculation
     '''
     if flag_message == 0:
-        message_path = os.path.join('./', 'mice')
+        message_path = os.path.join('./', 'src', 'mice')
         mice.folder_checker(message_path)
         message_path = os.path.join(message_path, 'message_boxcalc.log')
     elif flag_message == 1:
-        message_path = os.path.join('./', 'mice')
+        message_path = os.path.join('./', 'src', 'mice')
         mice.folder_checker(message_path)
         message_path = os.path.join(message_path, 'message_entropycalc.log')
+    elif flag_message == 2:
+        message_path = os.path.join('./', 'src', 'mice')
+        mice.folder_checker(message_path)
+        message_path = os.path.join(message_path, 'message_isingcalc.log')
+
     try:
         logger.counter += 1
     except Exception:
@@ -570,6 +622,8 @@ def logger(my_str, mod, flag=[], number_combinations=0, flag_message=0, num_boxe
         elif flag_message == 1:
             print(f'==== log file for the Mutual Information for different box shapes ====\n\n'
                   f'We split our space into: {num_boxes} boxes.\nWe have {number_combinations} runs in total\n\n')
+        elif flag_message == 2:
+            print(f'==== log file for the Mutual Information for ising ====\n\n')
         sys.stdout = sys.__stdout__
         log_file.close()
 
@@ -643,3 +697,53 @@ def lin_ave(data, window_frac):
     data = np.array(data)
     window = np.floor(data.shape[0] * window_frac).astype(int)
     return [np.mean(data[i:i+window]) for i in range(0,len(data)-window)]
+
+@gin.configurable
+def ising_temp_fig(df, figsize):
+    '''
+    Plot the mutual information of ising as a function of the temperature
+
+    figsize: the size of the figure
+    df: dataframe with our data
+
+    return:
+    None
+    '''
+    plt.figure(num=0, figsize=figsize)
+    plt.clf()
+    plt.xlabel('Temperature')
+    plt.ylabel('Mutual Information')
+    plt.title('Mutual Information as a function of the Temperature')
+    plt.tight_layout()
+    sns.relplot(x='T', y='MI', data=df)
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "ising")
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
+
+    return None
+
+@gin.configurable
+def ising_temp_fig_running(df, figsize):
+    '''
+    Plot the mutual information of ising as a function of the temperature
+
+    figsize: the size of the figure
+    df: dataframe with our data
+
+    return:
+    None
+    '''
+    plt.figure(num=0, figsize=figsize)
+    plt.clf()
+    plt.xlabel('Temperature')
+    plt.ylabel('Mutual Information')
+    plt.title('Mutual Information as a function of the Temperature')
+    plt.tight_layout()
+    sns.relplot(x='T', y='MI', data=df)
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "ising")
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
+
+    return None

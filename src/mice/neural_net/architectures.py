@@ -2,6 +2,37 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
+class MiceConv(nn.Module):
+    def __init__(self, input_size=576):
+        super().__init__()
+
+        self.layer1 =  nn.Sequential(nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=0),
+                                     nn.ReLU())
+        
+
+        self.layer2 = nn.Sequential(nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=0),
+                                    nn.ReLU(),
+                                    nn.MaxPool2d(kernel_size=2, stride=2))
+
+        self.drop_out = nn.Dropout(p=0.3)
+        
+        self.fc1 = nn.Linear(input_size, int(input_size/2))
+        self.fc2 = nn.Linear( int(input_size/2),  1)
+        
+        print('Finished init')
+
+    def forward(self, data):
+        output = self.layer1(data)
+        output = self.layer2(output)
+
+        output = self.drop_out(output)
+        output = output.reshape(output.size(0), -1)
+
+        output = self.fc1(output)
+        output = F.relu(output)
+        output = self.fc2(output)
+
+        return output
 
 class Net(nn.Module):
     '''

@@ -26,7 +26,7 @@ def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, f
     return:
     None
     '''
-    weights_path = os.path.join('./', 'model_weights')
+    weights_path = os.path.join('./', 'src', 'model_weights')
     PATH = os.path.join(weights_path, genom+'_model_weights.pth')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     R = np.random.RandomState(seed=1)

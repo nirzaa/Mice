@@ -12,6 +12,20 @@ box_runner.box_frac = 1
 
 #======================#
 
+import mice.main.box_menu_ising
+
+ising_box_runner.num_samples = 8e2
+ising_box_runner.max_epochs = 3e2
+ising_box_runner.transfer_epochs = 3e2
+ising_box_runner.batch_size = 192
+ising_box_runner.freq_print = 1e1
+ising_box_runner.genom = 'mice_conv'
+ising_box_runner.lr = 1e-3
+ising_box_runner.weight_decay = 1e-4
+ising_box_runner.box_frac = 0.5
+
+#=======================#
+
 import mice.utils.my_utils
 
 lattices_generator.num_samples = 2e2
@@ -26,6 +40,9 @@ entropy_fig_together.figsize = (12, 6)
 entropy_fig_running.figsize = (12, 6)
 exp_ave.window_frac = 0.1
 lin_ave.window_frac = 0.1
+ising_temp_fig.figsize = (12,6)
+ising_temp_fig_running.figsize = (12,6)
+ising_fig.figsize = (12, 6)
 
 #======================#
 
@@ -45,6 +62,16 @@ entropy_runner.lr = 1e-3
 entropy_runner.weight_decay = 1e-4
 entropy_runner.batch_size = 300
 entropy_runner.freq_print = 1e1
+
+#=======================#
+
+import mice.ising_const.ising_script
+
+ising_runner.num_isings = 7e5
+ising_runner.dims = (1, 16, 8)
+ising_runner.J = 1
+
+#=======================#
 
 
 
