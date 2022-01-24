@@ -85,30 +85,29 @@ class Modely(nn.Module):
     '''
     The real fully conventional architecture of the neural net
     '''
-    def __init__(self):
+    def __init__(self, input_size):
         super(Modely, self).__init__()
-        self.conv1 = nn.Conv3d(in_channels=1, out_channels=16, kernel_size=(3,3,3), stride=(1,1,1), padding=1,)
-        self.conv2 = nn.Conv3d(in_channels=16, out_channels=32, kernel_size=(3,3,3), stride=(1,1,1), padding=1, )
-        self.conv3 = nn.Conv3d(in_channels=32, out_channels=64, kernel_size=(3,3,3), stride=(1,1,1), padding=1, )
-        self.conv4 = nn.Conv3d(in_channels=64, out_channels=16, kernel_size=(1,1,1), stride=(1,1,1), padding=0, )
-        self.conv5 = nn.Conv3d(in_channels=16, out_channels=1, kernel_size=(1, 1, 1), stride=(1, 1, 1), padding=0, )
+        self.conv1 = nn.Conv3d(in_channels=1, out_channels=16, kernel_size=(1,3,3), stride=(1,1,1), padding=(0,1,1),)
+        self.conv2 = nn.Conv3d(in_channels=16, out_channels=1, kernel_size=(1,3,3), stride=(1,1,1), padding=(0,1,1), )
         self.avgpool3d = nn.AdaptiveAvgPool3d((1, 1, 1))
         self.dropout1 = nn.Dropout(p=0.2) # p – probability of an element to be zeroed. Default: 0.5
         self.batchnorm1 = nn.BatchNorm3d(num_features=16)
         self.batchnorm2 = nn.BatchNorm3d(num_features=32)
         self.batchnorm3 = nn.BatchNorm3d(num_features=64)
+        self.fc1 = nn.Linear(input_size, 1)
 
     def forward(self, x):
-        x = torch.unsqueeze(x, 1)
-        x = self.conv1(x)
-        x = self.conv2(F.relu(x))
-        x = self.conv3(F.relu(x))
-        # torch.Size([32, 64, 2, 2,2])
-        x = self.avgpool3d(x)
-        # torch.Size([32, 64, 1, 1, 1])
-        x = self.conv4(x)
-        x = self.conv5(x)
-        # torch.Size([32, 1, 1, 1])
-        x = x.view(-1, 1)
-        # torch.Size([32, 1])
-        return x
+        wide = torch.unsqueeze(x, 1) # torch.Size([32, 1, 1, 16, 16])
+        x = self.conv1(F.relu(wide)) # torch.Size([32, 16, 1, 16, 16])
+        x = self.conv2(F.relu(x)) # torch.Size([32, 1, 1, 16, 16])
+        wide1, x1 = wide, x
+        x2 = self.conv1(F.relu(x1 + wide1)) # torch.Size([32, 16, 1, 16, 16])
+        x2 = self.conv2(F.relu(x2)) # torch.Size([32, 1, 1, 1, 1])
+        x3 = self.conv1(F.relu(x2 + wide1)) # torch.Size([32, 16, 1, 16, 16])
+        x3 = self.conv2(F.relu(x3)) # torch.Size([32, 1, 1, 16, 16])
+        x3 = x3.squeeze(axis=1) # torch.Size([32, 1, 16, 16])
+        x4 = x3.view(x3.shape[0], -1) # torch.Size([32, 256])
+        x4 = self.fc1(x4) # torch.Size([32, 1])
+        x5 = self.avgpool3d(x3) # torch.Size([32, 1, 1, 1])
+        x5 = x5.view(x5.shape[0], -1) # torch.Size([32, 1])
+        return x4

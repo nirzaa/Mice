@@ -17,9 +17,9 @@ import mice.main.box_menu_ising
 ising_box_runner.num_samples = 8e2
 ising_box_runner.max_epochs = 3e2
 ising_box_runner.transfer_epochs = 3e2
-ising_box_runner.batch_size = 192
+ising_box_runner.batch_size = 32
 ising_box_runner.freq_print = 1e1
-ising_box_runner.genom = 'mice_conv'
+ising_box_runner.genom = 'new_fcn'
 ising_box_runner.lr = 1e-3
 ising_box_runner.weight_decay = 1e-4
 ising_box_runner.box_frac = 0.5

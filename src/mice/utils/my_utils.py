@@ -74,7 +74,7 @@ def sizer(num_boxes, box_frac):
           f'='*50)
     return (x_size, y_size, z_size)
 
-def mi_model(genom, n_epochs, max_epochs):
+def mi_model(genom, n_epochs, max_epochs, input_size=100):
     '''
     Declare the model and loading the weights if necessary
     
@@ -99,7 +99,7 @@ def mi_model(genom, n_epochs, max_epochs):
         model = mice.Model()
         model.to(device)
     elif genom == 'new_fcn':
-        model = mice.Modely()
+        model = mice.Modely(input_size=input_size)
         model.to(device)
     elif genom == 'mice_conv':
         model = mice.MiceConv()
@@ -130,7 +130,7 @@ def mi_model(genom, n_epochs, max_epochs):
     if n_epochs != max_epochs and genom == 'new_fcn':
         print(f'==== new fcn ====\nWeights have been loaded!\nWe are using {gpu_name}')
         PATH = os.path.join(weights_path, 'new_fcn_model_weights.pth')
-        model = mice.Modely()
+        model = mice.Modely(input_size=input_size)
         model.load_state_dict(torch.load(PATH), strict=False)
         model.eval()
         model.to(device)
@@ -141,7 +141,7 @@ def mi_model(genom, n_epochs, max_epochs):
     if n_epochs != max_epochs and genom == 'mice_conv':
         print(f'==== mice_conv ====\nWeights have been loaded!\nWe are using {gpu_name}')
         PATH = os.path.join(weights_path, 'mice_conv_model_weights.pth')
-        model = mice.Net()
+        model = mice.MiceConv()
         model.load_state_dict(torch.load(PATH), strict=False)
         model.eval()
         model.to(device)
@@ -345,8 +345,8 @@ def valid_one_epoch(model, data_loader, ma_rate=0.01):
     for batch_idx, data in enumerate(data_loader):
         with torch.no_grad():
             loss, mutual = valid_one_step(model, data, ma_rate)
-        total_loss += loss
-        total_mutual += mutual
+            total_loss += loss
+            total_mutual += mutual
     return total_loss / len(data_loader), total_mutual / len(data_loader)
 def valid_one_step(model, data, ma_rate, ma_et=1.0):
     '''
@@ -717,7 +717,7 @@ def ising_temp_fig(df, figsize):
     plt.tight_layout()
     sns.relplot(x='T', y='MI', data=df)
     plt.legend()
-    saved_path = os.path.join('./', "figures", "losses", "ising")
+    saved_path = os.path.join('./', "figures", "losses", "ising", "genom")
     mice.folder_checker(saved_path)
     plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
 
@@ -742,7 +742,7 @@ def ising_temp_fig_running(df, figsize):
     plt.tight_layout()
     sns.relplot(x='T', y='MI', data=df)
     plt.legend()
-    saved_path = os.path.join('./', "figures", "losses", "ising")
+    saved_path = os.path.join('./', "figures", "losses", "ising", "genom")
     mice.folder_checker(saved_path)
     plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
 

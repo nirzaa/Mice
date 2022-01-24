@@ -46,10 +46,11 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
         n1 = np.array(f.get('dataset_1'))
         n1 = np.expand_dims(n1, axis=1)
         list_ising = list(n1)
-    # x_size = list_ising[0].shape[0]
-    # y_size = list_ising[0].shape[1]
-    # z_size = list_ising[0].shape[2]
-    model = mice.mi_model(genom=genom, n_epochs=n_epochs, max_epochs=max_epochs)
+    x_size = list_ising[0].shape[0]
+    y_size = list_ising[0].shape[1]
+    z_size = list_ising[0].shape[2]
+    input_size = x_size * y_size * z_size
+    model = mice.mi_model(genom=genom, n_epochs=n_epochs, max_epochs=max_epochs, input_size=input_size)
     optimizer = Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     train_losses = []
     valid_losses = []
@@ -64,8 +65,12 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
         right_lattices_random = right_lattices.copy()
         R.shuffle(right_lattices_random)
         product_lattices = np.concatenate((left_lattices, right_lattices_random), axis=axis + 1)
+        # joint_lattices, joint_valid, product_lattices, product_valid = train_test_split(joint_lattices, product_lattices,
+        #                                                                                 test_size=0.2, random_state=42)
+
         joint_lattices, joint_valid, product_lattices, product_valid = train_test_split(joint_lattices, product_lattices,
                                                                                         test_size=0.2, random_state=42)
+
         AB_joint, AB_product = torch.tensor(joint_lattices), torch.tensor(product_lattices)
         AB_joint_train, AB_product_train = AB_joint.to(device), AB_product.to(device)
         dataset_train = mice.MiceDataset(x_joint=AB_joint_train, x_product=AB_product_train)
