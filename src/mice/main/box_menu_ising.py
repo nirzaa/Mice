@@ -11,7 +11,7 @@ import random
 import pandas as pd
 import h5py
 import matplotlib.pyplot as plt
-
+import numba
 
 @gin.configurable
 def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weight_decay, box_frac, num_samples, transfer_epochs):

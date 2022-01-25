@@ -9,7 +9,9 @@ import torch.nn.functional as F
 import torch.autograd as autograd
 import h5py
 from tqdm import tqdm
+import numba
 
+@numba.jit(nopython=True)
 def bits_array_to_bytes_array(bits_array):
     bytes_array_shape = (bits_array.shape[0], bits_array.shape[1], bits_array.shape[2]*8)
     bytes_array = np.zeros(bytes_array_shape, dtype=np.uint8)
