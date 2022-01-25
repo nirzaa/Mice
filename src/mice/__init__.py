@@ -36,7 +36,8 @@ from mice.utils.my_utils import (
     exp_ave,
     lin_ave,
     ising_temp_fig,
-    ising_temp_fig_running
+    ising_temp_fig_running,
+    lin_ave_running
 )
 
 from mice.main.box_menu import (
@@ -59,6 +60,11 @@ from bin.load_data import (
 from mice.ising_const.ising_script import (
     ising_runner,
     part_lattices
+)
+
+from mice.utils.pytorch_modules import (
+    LRScheduler,
+    EarlyStopping
 )
 
 # gin configurations

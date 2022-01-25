@@ -9,6 +9,8 @@ from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import sys
 import seaborn as sns
+from pytorch_lightning import Trainer
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 class MiceDataset(Dataset):
     '''
@@ -85,6 +87,7 @@ def mi_model(genom, n_epochs, max_epochs, input_size=100):
     return:
     the relevant model loaded with its weights
     '''
+    early_stop_callback = EarlyStopping(monitor="val_accuracy", min_delta=0.00, patience=3, verbose=False, mode="max")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if torch.cuda.is_available():
         gpu_name = torch.cuda.get_device_name(0)
@@ -698,8 +701,16 @@ def lin_ave(data, window_frac):
     window = np.floor(data.shape[0] * window_frac).astype(int)
     return [np.mean(data[i:i+window]) for i in range(0,len(data)-window)]
 
+def lin_ave_running(epoch, data, window_size):
+    data = np.array(data)
+    if epoch == 0:
+        return [0]
+    elif epoch < window_size:
+        return [np.mean(data[i:i+epoch]) for i in range(0,len(data)-epoch)]
+    return [np.mean(data[i:i+window_size]) for i in range(0,len(data)-window_size)]
+
 @gin.configurable
-def ising_temp_fig(df, figsize):
+def ising_temp_fig(df, figsize, genom):
     '''
     Plot the mutual information of ising as a function of the temperature
 
@@ -717,14 +728,14 @@ def ising_temp_fig(df, figsize):
     plt.tight_layout()
     sns.relplot(x='T', y='MI', data=df)
     plt.legend()
-    saved_path = os.path.join('./', "figures", "losses", "ising", "genom")
+    saved_path = os.path.join('./', "figures", "losses", "ising", genom)
     mice.folder_checker(saved_path)
     plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
 
     return None
 
 @gin.configurable
-def ising_temp_fig_running(df, figsize):
+def ising_temp_fig_running(df, figsize, genom):
     '''
     Plot the mutual information of ising as a function of the temperature
 
@@ -742,7 +753,7 @@ def ising_temp_fig_running(df, figsize):
     plt.tight_layout()
     sns.relplot(x='T', y='MI', data=df)
     plt.legend()
-    saved_path = os.path.join('./', "figures", "losses", "ising", "genom")
+    saved_path = os.path.join('./', "figures", "losses", "ising", genom)
     mice.folder_checker(saved_path)
     plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
 

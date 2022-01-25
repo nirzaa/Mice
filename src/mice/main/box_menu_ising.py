@@ -1,4 +1,3 @@
-import imp
 import os
 import numpy as np
 import gin
@@ -11,6 +10,7 @@ from sklearn.model_selection import train_test_split
 import random
 import pandas as pd
 import h5py
+import matplotlib.pyplot as plt
 
 
 @gin.configurable
@@ -52,10 +52,14 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
     input_size = x_size * y_size * z_size
     model = mice.mi_model(genom=genom, n_epochs=n_epochs, max_epochs=max_epochs, input_size=input_size)
     optimizer = Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    lr_scheduler = mice.LRScheduler(optimizer)
+    early_stopping = mice.EarlyStopping()
     train_losses = []
     valid_losses = []
     axis = int(np.argmax((list_ising[0].shape[0], list_ising[0].shape[1], list_ising[0].shape[2])))
     axis = int(np.argmax((list_ising[0].shape[0], list_ising[0].shape[1])))
+    saver = 0
+    cntr = 0
     for epoch in tqdm(range(int(n_epochs))):
         place = random.sample(range(len(list_ising)), k=int(num_samples))
         lattices = np.array(list_ising)[place]
@@ -87,6 +91,13 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
         valid_loss, valid_mutual = mice.valid_one_epoch(model=model, data_loader=loader)
         valid_losses.append(valid_mutual.cpu().detach().numpy())
         
+        # lr_scheduler(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=10))
+        # early_stopping(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=10))
+        lr_scheduler(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=10)[-1])
+        early_stopping(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=10)[-1])
+        if early_stopping.early_stop:
+            break
+        cntr += 1
         if epoch % freq_print == 0:
             print(f'\nMI for train {train_losses[-1]}, val {valid_losses[-1]} at step {epoch}')
         
@@ -102,7 +113,8 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
 
 def ising_temp():
     Ts = [round(T,2) for T in np.linspace(0.1, 4, 5)]
-    Ts = [0.1, 1, 2, 2.1, 2.2, 2.3, 2.4, 2.7, 2.9, 3, 3.2, 4]
+    # Ts = [0.1, 1, 2, 2.1, 2.2, 2.3, 2.4, 2.7, 2.9, 3, 3.2, 4]
+    Ts = [2.1]
     mi = np.zeros(len(Ts))
 
     for idx, T in enumerate(Ts):
