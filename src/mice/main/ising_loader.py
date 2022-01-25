@@ -52,8 +52,11 @@ def get_all_sub_matrices(matrices, sub_shape, step=1):
 
 if __name__ == '__main__':
     directory = os.path.join('./', 'ising_data')
-    Ts = [round(T,2) for T in np.linspace(0.1, 4, 5)]
-    Ts = [2, 2.1, 2.3, 2.4, 2.7, 2.9, 3.2]
+    Ts_x = [round(T,2) for T in np.linspace(0.1, 4, 40)]
+    Ts_y = [0.1, 1, 2, 2.1, 2.2, 2.3, 2.4, 2.7, 2.9, 3, 3.2, 4]
+    Ts = [i for i in Ts_x if i not in Ts_y]
+    
+    
     for T in tqdm(Ts):
         ising_matrices = get_ising_matrices(T, directory)
         ising_matrices = np.array(ising_matrices, dtype=np.float32)
