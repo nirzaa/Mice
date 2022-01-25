@@ -9,8 +9,8 @@ from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import sys
 import seaborn as sns
-from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+# from pytorch_lightning import Trainer
+# from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 class MiceDataset(Dataset):
     '''
@@ -87,7 +87,7 @@ def mi_model(genom, n_epochs, max_epochs, input_size=100):
     return:
     the relevant model loaded with its weights
     '''
-    early_stop_callback = EarlyStopping(monitor="val_accuracy", min_delta=0.00, patience=3, verbose=False, mode="max")
+    # early_stop_callback = EarlyStopping(monitor="val_accuracy", min_delta=0.00, patience=3, verbose=False, mode="max")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if torch.cuda.is_available():
         gpu_name = torch.cuda.get_device_name(0)
