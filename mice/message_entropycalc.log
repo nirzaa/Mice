@@ -1,0 +1,16 @@
+==== log file for the Mutual Information for different box shapes ====
+
+We split our space into: 4 boxes.
+We have 4 runs in total
+
+
+0 .  The MI train for (2, 2, 2) box is: -0.00 
+
+1 .  The MI train for (2, 2, 4) box is: 0.01 
+
+2 .  The MI train for (2, 4, 4) box is: 0.06 
+
+3 .  The MI train for (4, 4, 4) box is: 0.46 
+
+4 .  The total MI train is: 0.53 
+

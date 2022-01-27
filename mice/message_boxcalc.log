@@ -1,0 +1,11 @@
+==== log file for the Mutual Information for different number of boxes ====
+
+We have 2 runs in total
+
+
+0 .  MI train for 2 boxes is: 0.70
+The fraction we split to is: 1, therefore the small box size is: 2x2x2 
+
+1 .  MI train for 4 boxes is: 0.62
+The fraction we split to is: 1, therefore the small box size is: 4x4x4 
+
