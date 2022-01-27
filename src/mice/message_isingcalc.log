@@ -1,5 +1,9 @@
 ==== log file for the Mutual Information for ising ====
 
 
-0 .  MI train for ising, T = 0.1 is: 0.71 
+0 .  MI train for ising, T = 0.1 is: 0.70 
+
+1 .  MI train for ising, T = 0.2 is: 0.70 
+
+2 .  MI train for ising, T = 0.3 is: 0.71 
 

@@ -304,7 +304,7 @@ def train_one_epoch(window_size, epoch, train_losses, model, data_loader, optimi
     total_loss = total_loss / len(data_loader)
     total_mutual = total_mutual / len(data_loader)
     if epoch > window_size*2:
-        total_mutual = float(mice.loss_lin_ave(current_loss=total_mutual.detach().numpy(), data=train_losses, window_size=window_size))
+        total_mutual = float(mice.loss_lin_ave(current_loss=total_mutual.cpu().detach().numpy(), data=train_losses, window_size=window_size))
         total_mutual = torch.tensor(total_mutual, requires_grad=True)
     return total_loss, total_mutual
 
@@ -359,7 +359,7 @@ def valid_one_epoch(window_size, epoch, valid_losses, model, data_loader, ma_rat
     total_loss = total_loss / len(data_loader)
     total_mutual = total_mutual / len(data_loader)
     if epoch > window_size*2:
-        total_mutual = float(mice.loss_lin_ave(current_loss=total_mutual.detach().numpy(), data=valid_losses, window_size=window_size))
+        total_mutual = float(mice.loss_lin_ave(current_loss=total_mutual.cpu().detach().numpy(), data=valid_losses, window_size=window_size))
         total_mutual = torch.tensor(total_mutual, requires_grad=True)
     return total_loss, total_mutual
 def valid_one_step(window_size, epoch, valid_losses, model, data, ma_rate, ma_et=1.0):
@@ -385,7 +385,7 @@ def valid_one_step(window_size, epoch, valid_losses, model, data, ma_rate, ma_et
     ma_et = (1 - ma_rate) * ma_et + ma_rate * torch.mean(exp_product)
     loss_train = -(torch.mean(joint_output) - (1 / ma_et.mean()).detach() * torch.mean(exp_product))
     if epoch > window_size*2:
-        loss_train = float(mice.loss_lin_ave(current_loss=loss_train.detach().numpy(), data=valid_losses, window_size=window_size))
+        loss_train = float(mice.loss_lin_ave(current_loss=loss_train.cpu().detach().numpy(), data=valid_losses, window_size=window_size))
         loss_train = torch.tensor(loss_train, requires_grad=True)
     return loss_train, mutual
 
