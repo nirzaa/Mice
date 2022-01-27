@@ -282,7 +282,7 @@ def loss_function(joint_output, product_output):
     mutual = torch.mean(joint_output) - torch.log(torch.mean(exp_product))
     return mutual, joint_output, exp_product
 
-def train_one_epoch(model, data_loader, optimizer, ma_rate=0.01):
+def train_one_epoch(window_size, epoch, train_losses, model, data_loader, optimizer, ma_rate=0.01):
     '''
     train one epoch
     
@@ -298,11 +298,17 @@ def train_one_epoch(model, data_loader, optimizer, ma_rate=0.01):
     total_loss = 0
     total_mutual = 0
     for batch_idx, data in enumerate(data_loader):
-        loss, mutual = train_one_step(model, data, optimizer, ma_rate)
+        loss, mutual = train_one_step(window_size, epoch, train_losses, model, data, optimizer, ma_rate)
         total_loss += loss
         total_mutual += mutual
-    return total_loss / len(data_loader), total_mutual / len(data_loader)
-def train_one_step(model, data, optimizer, ma_rate, ma_et=1.0):
+    total_loss = total_loss / len(data_loader)
+    total_mutual = total_mutual / len(data_loader)
+    if epoch > window_size*2:
+        total_mutual = float(mice.loss_lin_ave(current_loss=total_mutual.detach().numpy(), data=train_losses, window_size=window_size))
+        total_mutual = torch.tensor(total_mutual, requires_grad=True)
+    return total_loss, total_mutual
+
+def train_one_step(window_size, epoch, train_losses, model, data, optimizer, ma_rate, ma_et=1.0):
     '''
     train one batch in the epoch
     
@@ -331,7 +337,7 @@ def train_one_step(model, data, optimizer, ma_rate, ma_et=1.0):
     optimizer.step()
     return loss_train, mutual
 
-def valid_one_epoch(model, data_loader, ma_rate=0.01):
+def valid_one_epoch(window_size, epoch, valid_losses, model, data_loader, ma_rate=0.01):
     '''
     validation of one epoch
     
@@ -347,11 +353,16 @@ def valid_one_epoch(model, data_loader, ma_rate=0.01):
     total_mutual = 0
     for batch_idx, data in enumerate(data_loader):
         with torch.no_grad():
-            loss, mutual = valid_one_step(model, data, ma_rate)
+            loss, mutual = valid_one_step(window_size, epoch, valid_losses, model, data, ma_rate)
             total_loss += loss
             total_mutual += mutual
-    return total_loss / len(data_loader), total_mutual / len(data_loader)
-def valid_one_step(model, data, ma_rate, ma_et=1.0):
+    total_loss = total_loss / len(data_loader)
+    total_mutual = total_mutual / len(data_loader)
+    if epoch > window_size*2:
+        total_mutual = float(mice.loss_lin_ave(current_loss=total_mutual.detach().numpy(), data=valid_losses, window_size=window_size))
+        total_mutual = torch.tensor(total_mutual, requires_grad=True)
+    return total_loss, total_mutual
+def valid_one_step(window_size, epoch, valid_losses, model, data, ma_rate, ma_et=1.0):
     '''
     validation of one batch in the epoch
     
@@ -373,6 +384,9 @@ def valid_one_step(model, data, ma_rate, ma_et=1.0):
         return 'problem'
     ma_et = (1 - ma_rate) * ma_et + ma_rate * torch.mean(exp_product)
     loss_train = -(torch.mean(joint_output) - (1 / ma_et.mean()).detach() * torch.mean(exp_product))
+    if epoch > window_size*2:
+        loss_train = float(mice.loss_lin_ave(current_loss=loss_train.detach().numpy(), data=valid_losses, window_size=window_size))
+        loss_train = torch.tensor(loss_train, requires_grad=True)
     return loss_train, mutual
 
 @gin.configurable
@@ -705,6 +719,13 @@ def lin_ave_running(epoch, data, window_size):
         return [np.mean(data[i:i+epoch]) for i in range(0,len(data)-epoch)]
     return [np.mean(data[i:i+window_size]) for i in range(0,len(data)-window_size)]
 
+def loss_lin_ave(current_loss, data, window_size):
+    current_data = data.copy()
+    current_data.append(current_loss)
+    current_data = np.array(current_data)
+    return current_data[-window_size:].mean()
+
+    
 @gin.configurable
 def ising_temp_fig(df, figsize, genom):
     '''

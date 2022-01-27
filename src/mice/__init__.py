@@ -37,7 +37,8 @@ from mice.utils.my_utils import (
     lin_ave,
     ising_temp_fig,
     ising_temp_fig_running,
-    lin_ave_running
+    lin_ave_running,
+    loss_lin_ave
 )
 
 from mice.main.box_menu import (

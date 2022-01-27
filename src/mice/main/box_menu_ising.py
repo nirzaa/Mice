@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numba
 
 @gin.configurable
-def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weight_decay, box_frac, num_samples, transfer_epochs):
+def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weight_decay, box_frac, num_samples, transfer_epochs, window_size=3):
     '''
     Running the neural network in order to calculate the right number of boxes to split our space into
 
@@ -84,17 +84,17 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
         dataset_valid = mice.MiceDataset(x_joint=AB_joint_valid, x_product=AB_product_valid)
 
         loader = DataLoader(dataset=dataset_train, batch_size=batch_size, num_workers=0, shuffle=False)
-        loss_train, mutual_train = mice.train_one_epoch(model=model, data_loader=loader, optimizer=optimizer)
+        loss_train, mutual_train = mice.train_one_epoch(window_size=window_size, epoch=epoch, train_losses=train_losses, model=model, data_loader=loader, optimizer=optimizer)
         train_losses.append(mutual_train.cpu().detach().numpy())
 
         loader = DataLoader(dataset=dataset_valid, batch_size=batch_size, num_workers=0, shuffle=False)
-        valid_loss, valid_mutual = mice.valid_one_epoch(model=model, data_loader=loader)
+        valid_loss, valid_mutual = mice.valid_one_epoch(window_size=window_size, epoch=epoch, valid_losses=valid_losses, model=model, data_loader=loader)
         valid_losses.append(valid_mutual.cpu().detach().numpy())
         
-        # lr_scheduler(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=10))
-        # early_stopping(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=10))
-        lr_scheduler(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=10)[-1])
-        early_stopping(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=10)[-1])
+        # lr_scheduler(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=window_size))
+        # early_stopping(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=window_size))
+        lr_scheduler(valid_losses[-1])
+        early_stopping(valid_losses[-1])
         if early_stopping.early_stop:
             break
         cntr += 1
@@ -102,8 +102,8 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
             print(f'\nMI for train {train_losses[-1]}, val {valid_losses[-1]} at step {epoch}')
         
     torch.save(model.state_dict(), PATH)
-    train_losses = mice.exp_ave(data=train_losses)
-    valid_losses = mice.exp_ave(data=valid_losses)
+    # train_losses = mice.exp_ave(data=train_losses)
+    # valid_losses = mice.exp_ave(data=valid_losses)
     mice.logger(f'MI train for ising, T = {T} is: {train_losses[-1]:.2f}', flag_message=2)
     mice.ising_fig(num=0, genom=genom, T=T, train_losses=train_losses, valid_losses=valid_losses)
     mi_num_box_dependant.append(train_losses[-1])
