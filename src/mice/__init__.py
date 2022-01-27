@@ -68,6 +68,10 @@ from mice.utils.pytorch_modules import (
     EarlyStopping
 )
 
+from mice.main.ising_loader import (
+    runner_loader
+)
+
 # gin configurations
 gin.external_configurable(np.array)
 gin.parse_config_file('./src/mice/config.gin')

@@ -725,6 +725,14 @@ def loss_lin_ave(current_loss, data, window_size):
     current_data = np.array(current_data)
     return current_data[-window_size:].mean()
 
+def loss_exp_ave(current_loss, data, window_size):
+    weights = np.linspace(1, 10, 10, dtype='int')
+    weights = np.exp(weights)
+    current_data = data.copy()
+    current_data.append(current_loss)
+    current_data = np.array(current_data)
+    return np.ma.average(current_data, weights=weights)
+
     
 @gin.configurable
 def ising_temp_fig(df, figsize, genom):

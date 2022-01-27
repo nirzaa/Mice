@@ -94,9 +94,10 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
         # lr_scheduler(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=window_size))
         # early_stopping(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=window_size))
         lr_scheduler(valid_losses[-1])
-        early_stopping(valid_losses[-1])
-        if early_stopping.early_stop:
-            break
+        if epoch > 100:
+            early_stopping(valid_losses[-1])
+            if early_stopping.early_stop:
+                break
         cntr += 1
         if epoch % freq_print == 0:
             print(f'\nMI for train {train_losses[-1]}, val {valid_losses[-1]} at step {epoch}')
@@ -112,19 +113,24 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
     return mi_num_box_dependant[-1]
 
 def ising_temp():
+    my_path = os.path.join('./', 'ising_h5py')
     Ts = [round(T,2) for T in np.linspace(0.1, 4, 40)]
-
     mi = np.zeros(len(Ts))
-
     for idx, T in enumerate(Ts):
         if T.is_integer():
             T = int(T)
+        print('loading into .h5py format...')
+        mice.runner_loader(T)
         print(f'Running on T = {T}')
         print('='*50)
         current_mi = mice.ising_box_runner(idx=idx, T=T)
         mi[idx] = current_mi
         df = pd.DataFrame({'T': Ts, 'MI': mi})
         mice.ising_temp_fig_running(df=df)
+        file_path = os.path.join(my_path, f'ising_data_64_{T}.h5')
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            print(f'{file_path} got deleted')
     df = pd.DataFrame({'T': Ts, 'MI': mi})
     mice.ising_temp_fig(df=df)
 

@@ -52,25 +52,30 @@ def get_all_sub_matrices(matrices, sub_shape, step=1):
             all_subs.append(sub_matrix)
     return np.concatenate(all_subs, axis=0)
 
+def runner_loader(T):
+    directory = os.path.join('./', 'ising_data')
+    ising_matrices = get_ising_matrices(T, directory)
+    ising_matrices = np.array(ising_matrices, dtype=np.float32)
+    ising_matrices -= 0.5
+    ising_matrices *= 2
+    ising_matrices = np.concatenate([ising_matrices, np.flip(ising_matrices, axis=1), np.flip(ising_matrices, axis=2)])
+    print(ising_matrices.shape)
+    subsystem_shape = (16,16)
+    ising_subsystems = get_all_sub_matrices(ising_matrices, subsystem_shape, step=10)
+    print(ising_subsystems.shape)
+    with h5py.File(os.path.join('./', 'ising_h5py', f'ising_data_64_{T}.h5'), 'w') as f:
+        f.create_dataset('dataset_1', data=ising_subsystems)
+    from sklearn.model_selection import train_test_split 
+    train_data, test_data = train_test_split(ising_subsystems)
+    print(train_data.shape)
+
 if __name__ == '__main__':
     directory = os.path.join('./', 'ising_data')
     Ts_x = [round(T,2) for T in np.linspace(0.1, 4, 40)]
     Ts_y = [0.1, 1, 2, 2.1, 2.2, 2.3, 2.4, 2.7, 2.9, 3, 3.2, 4]
     Ts = [i for i in Ts_x if i not in Ts_y]
-    
-    
     for T in tqdm(Ts):
-        ising_matrices = get_ising_matrices(T, directory)
-        ising_matrices = np.array(ising_matrices, dtype=np.float32)
-        ising_matrices -= 0.5
-        ising_matrices *= 2
-        ising_matrices = np.concatenate([ising_matrices, np.flip(ising_matrices, axis=1), np.flip(ising_matrices, axis=2)])
-        print(ising_matrices.shape)
-        subsystem_shape = (16,16)
-        ising_subsystems = get_all_sub_matrices(ising_matrices, subsystem_shape, step=10)
-        print(ising_subsystems.shape)
-        with h5py.File(os.path.join('./', 'ising_h5py', f'ising_data_64_{T}.h5'), 'w') as f:
-            f.create_dataset('dataset_1', data=ising_subsystems)
-        from sklearn.model_selection import train_test_split 
-        train_data, test_data = train_test_split(ising_subsystems)
-        print(train_data.shape)
+        runner_loader(T)
+    
+    
+    
