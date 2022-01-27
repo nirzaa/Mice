@@ -597,17 +597,13 @@ def logger(my_str, mod, flag=[], number_combinations=0, flag_message=0, num_boxe
     number_combinations: the lengh of our printing
     flag_message: if we are printing the box size searching or the entropy calculation
     '''
+    message_path = os.path.join('./', 'src', 'mice')
+    mice.folder_checker(message_path)
     if flag_message == 0:
-        message_path = os.path.join('./', 'src', 'mice')
-        mice.folder_checker(message_path)
         message_path = os.path.join(message_path, 'message_boxcalc.log')
     elif flag_message == 1:
-        message_path = os.path.join('./', 'src', 'mice')
-        mice.folder_checker(message_path)
         message_path = os.path.join(message_path, 'message_entropycalc.log')
     elif flag_message == 2:
-        message_path = os.path.join('./', 'src', 'mice')
-        mice.folder_checker(message_path)
         message_path = os.path.join(message_path, 'message_isingcalc.log')
 
     try:
