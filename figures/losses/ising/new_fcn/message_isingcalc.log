@@ -1,13 +1,13 @@
 ==== log file for the Mutual Information for ising ====
 
 
-0 .  MI train for ising, T = 0.1 is: 0.72 
+0 .  MI train for ising, T = 0.1 is: 0.70 
 
-1 .  MI train for ising, T = 0.2 is: 0.69 
+1 .  MI train for ising, T = 0.2 is: 0.71 
 
-2 .  MI train for ising, T = 0.3 is: 0.73 
+2 .  MI train for ising, T = 0.3 is: 0.71 
 
-3 .  MI train for ising, T = 0.4 is: 0.71 
+3 .  MI train for ising, T = 0.4 is: 0.70 
 
 4 .  MI train for ising, T = 0.5 is: 0.71 
 
@@ -15,69 +15,69 @@
 
 6 .  MI train for ising, T = 0.7 is: 0.70 
 
-7 .  MI train for ising, T = 0.8 is: 0.71 
+7 .  MI train for ising, T = 0.8 is: 0.70 
 
 8 .  MI train for ising, T = 0.9 is: 0.70 
 
-9 .  MI train for ising, T = 1 is: 0.68 
+9 .  MI train for ising, T = 1 is: 0.70 
 
-10 .  MI train for ising, T = 1.1 is: 0.71 
+10 .  MI train for ising, T = 1.1 is: 0.70 
 
-11 .  MI train for ising, T = 1.2 is: 0.69 
+11 .  MI train for ising, T = 1.2 is: 0.71 
 
 12 .  MI train for ising, T = 1.3 is: 0.71 
 
-13 .  MI train for ising, T = 1.4 is: 0.69 
+13 .  MI train for ising, T = 1.4 is: 0.70 
 
-14 .  MI train for ising, T = 1.5 is: 0.71 
+14 .  MI train for ising, T = 1.5 is: 0.70 
 
 15 .  MI train for ising, T = 1.6 is: 0.70 
 
-16 .  MI train for ising, T = 1.7 is: 0.75 
+16 .  MI train for ising, T = 1.7 is: 0.69 
 
-17 .  MI train for ising, T = 1.8 is: 0.68 
+17 .  MI train for ising, T = 1.8 is: 0.72 
 
-18 .  MI train for ising, T = 1.9 is: 0.76 
+18 .  MI train for ising, T = 1.9 is: 0.72 
 
-19 .  MI train for ising, T = 2 is: 0.76 
+19 .  MI train for ising, T = 2 is: 0.73 
 
-20 .  MI train for ising, T = 2.1 is: 0.91 
+20 .  MI train for ising, T = 2.1 is: 0.82 
 
-21 .  MI train for ising, T = 2.2 is: 1.03 
+21 .  MI train for ising, T = 2.2 is: 1.12 
 
-22 .  MI train for ising, T = 2.3 is: 1.55 
+22 .  MI train for ising, T = 2.3 is: 1.66 
 
-23 .  MI train for ising, T = 2.4 is: 1.75 
+23 .  MI train for ising, T = 2.4 is: 1.50 
 
-24 .  MI train for ising, T = 2.5 is: 1.56 
+24 .  MI train for ising, T = 2.5 is: 1.44 
 
-25 .  MI train for ising, T = 2.6 is: 1.45 
+25 .  MI train for ising, T = 2.6 is: 1.46 
 
-26 .  MI train for ising, T = 2.7 is: 1.38 
+26 .  MI train for ising, T = 2.7 is: 1.32 
 
-27 .  MI train for ising, T = 2.8 is: 1.19 
+27 .  MI train for ising, T = 2.8 is: 1.22 
 
-28 .  MI train for ising, T = 2.9 is: 1.16 
+28 .  MI train for ising, T = 2.9 is: 1.05 
 
-29 .  MI train for ising, T = 3 is: 0.94 
+29 .  MI train for ising, T = 3 is: 0.96 
 
-30 .  MI train for ising, T = 3.1 is: 0.94 
+30 .  MI train for ising, T = 3.1 is: 0.81 
 
-31 .  MI train for ising, T = 3.2 is: 0.83 
+31 .  MI train for ising, T = 3.2 is: 0.79 
 
-32 .  MI train for ising, T = 3.3 is: 0.89 
+32 .  MI train for ising, T = 3.3 is: 0.81 
 
-33 .  MI train for ising, T = 3.4 is: 0.78 
+33 .  MI train for ising, T = 3.4 is: 0.75 
 
 34 .  MI train for ising, T = 3.5 is: 0.71 
 
-35 .  MI train for ising, T = 3.6 is: 0.70 
+35 .  MI train for ising, T = 3.6 is: 0.63 
 
-36 .  MI train for ising, T = 3.7 is: 0.59 
+36 .  MI train for ising, T = 3.7 is: 0.60 
 
-37 .  MI train for ising, T = 3.8 is: 0.60 
+37 .  MI train for ising, T = 3.8 is: 0.57 
 
-38 .  MI train for ising, T = 3.9 is: 0.58 
+38 .  MI train for ising, T = 3.9 is: 0.57 
 
-39 .  MI train for ising, T = 4 is: 0.53 
+39 .  MI train for ising, T = 4 is: 0.51 
 
