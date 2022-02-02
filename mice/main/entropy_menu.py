@@ -1,8 +1,5 @@
-import sys
 import os
 import numpy as np
-my_path = os.path.join('./')
-sys.path.append(my_path)
 import gin
 import mice
 import torch
@@ -11,6 +8,7 @@ from torch.optim import Adam
 from tqdm import tqdm
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
+
 
 @gin.configurable
 def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, freq_print):
@@ -28,7 +26,7 @@ def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, f
     return:
     None
     '''
-    weights_path = os.path.join('./','model_weights')
+    weights_path = os.path.join('./', 'src', 'model_weights')
     PATH = os.path.join(weights_path, genom+'_model_weights.pth')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     R = np.random.RandomState(seed=1)
@@ -38,17 +36,17 @@ def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, f
     mi_entropy_dependant = []
     mi_entropy_dependant_valid = []
     my_root = int(np.floor(np.log2(num_boxes)))
-    my_combinations = list(combinations_with_replacement([2<<expo for expo in range(0, my_root)], 3))
+    my_combinations = list(combinations_with_replacement([2 << expo for expo in range(0, my_root)], 3))
     my_combinations.sort(key=mice.sort_func)
     mice.print_combinations(my_combinations)
     number_combinations = len(my_combinations)
     x_labels = []
     for i, j, k in my_combinations:
-        axis = int(np.argmax((i,j,k)))
+        axis = int(np.argmax((i, j, k)))
         print('='*50)
         print(f'The size of the small boxes is: {i}x{j}x{k}\n'
-        f'Therefore we cut on the {axis} axis\n'
-        f'Building the boxes... we are going to start training...')
+              f'Therefore we cut on the {axis} axis\n'
+              f'Building the boxes... we are going to start training...')
         epochs = (max_epochs // (cntr+1))
         epochs = int(np.ceil((max_epochs * 2) // ((i*j*k)**(1/3))))
         epochs = max(epochs, 1)
@@ -65,7 +63,7 @@ def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, f
             R.shuffle(right_lattices_random)
             product_lattices = np.concatenate((left_lattices, right_lattices_random), axis=axis + 1)
             joint_lattices, joint_valid, product_lattices, product_valid = train_test_split(joint_lattices, product_lattices,
-                test_size=0.2, random_state=42)
+                                                                                            test_size=0.2, random_state=42)
 
             AB_joint, AB_product = torch.tensor(joint_lattices), torch.tensor(product_lattices)
             AB_joint_train, AB_product_train = AB_joint.to(device), AB_product.to(device)
@@ -100,5 +98,7 @@ def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, f
     mi_entropy_dependant = np.array(mi_entropy_dependant)
     mice.logger(f'The total MI train is: {mi_entropy_dependant.sum():.2f}', number_combinations=number_combinations, flag_message=1)
     return None
+
+
 if __name__ == '__main__':
     mice.entropy_runner()

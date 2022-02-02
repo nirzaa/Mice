@@ -1,16 +1,15 @@
 import gin
 import numpy as np
 
-gin.external_configurable(np.array)
-gin.parse_config_file('./mice/config.gin')
-
-from mice.neural_net.architectures import(
+from mice.neural_net.architectures import (
+    MiceConv,
     Net,
     Model,
-    Modely
+    Modely,
+    Sandnet
 )
 
-from mice.utils.my_utils import(
+from mice.utils.my_utils import (
     MiceDataset,
     read_data,
     frames,
@@ -30,20 +29,50 @@ from mice.utils.my_utils import(
     entropy_fig,
     entropy_fig_together,
     entropy_fig_running,
+    ising_fig,
     folder_checker,
     sort_func,
     logger,
-    print_combinations
+    print_combinations,
+    exp_ave,
+    lin_ave,
+    ising_temp_fig,
+    ising_temp_fig_running,
+    lin_ave_running,
+    loss_lin_ave
 )
 
-from mice.main.box_menu import(
+from mice.main.box_menu import (
     box_runner
 )
 
-from mice.main.entropy_menu import(
+from mice.main.box_menu_ising import (
+    ising_box_runner,
+    ising_temp
+)
+
+from mice.main.entropy_menu import (
     entropy_runner
 )
 
-from bin.load_data import(
+from bin.load_data import (
     file_load
 )
+
+from mice.ising_const.ising_script import (
+    ising_runner,
+    part_lattices
+)
+
+from mice.utils.pytorch_modules import (
+    LRScheduler,
+    EarlyStopping
+)
+
+from mice.main.ising_loader import (
+    runner_loader
+)
+
+# gin configurations
+gin.external_configurable(np.array)
+gin.parse_config_file('./src/mice/config.gin')

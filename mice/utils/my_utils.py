@@ -4,12 +4,13 @@ import os
 import gin
 import torch
 import mice
-from torch.optim import Adam
-from tqdm import tqdm
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import sys
+import seaborn as sns
+# from pytorch_lightning import Trainer
+# from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 class MiceDataset(Dataset):
     '''
@@ -38,7 +39,7 @@ def read_data():
     return:
     blocks: the coordinates of our particles in different frames in time
     '''
-    my_hf = h5py.File(os.path.join('./','data','data.h5'), 'r')
+    my_hf = h5py.File(os.path.join('./','src','data','data.h5'), 'r')
     n1 = my_hf.get('dataset_1')
     blocks = np.array(n1)
     my_hf.close()
@@ -54,11 +55,10 @@ def frames():
     blocks = read_data()
     num_frames = blocks.shape[0]  # number of frames in the input
     print(f'The number of frames in the input is: {num_frames}',
-    f'\n',
-    '='*50)
+          f'\n',
+          '='*50)
     return num_frames
 
-@gin.configurable
 def sizer(num_boxes, box_frac):
     '''
     Calculate the size for our boxes to split our space to
@@ -72,11 +72,11 @@ def sizer(num_boxes, box_frac):
     x_size, y_size, z_size = int(np.floor(num_boxes*box_frac)), int(np.floor(num_boxes*box_frac)), int(np.floor(num_boxes*box_frac))
     x_size, y_size, z_size = x_size - x_size%2, y_size - y_size%2, z_size - z_size%2
     print(f'\nWe split the space into {num_boxes}x{num_boxes}x{num_boxes} boxes\n',
-        f'The size of the small box is: ({x_size}, {y_size}, {z_size})\n',
-        f'='*50)
+          f'The size of the small box is: ({x_size}, {y_size}, {z_size})\n',
+          f'='*50)
     return (x_size, y_size, z_size)
 
-def mi_model(genom, n_epochs, max_epochs):
+def mi_model(genom, n_epochs, max_epochs, input_size=100):
     '''
     Declare the model and loading the weights if necessary
     
@@ -87,12 +87,13 @@ def mi_model(genom, n_epochs, max_epochs):
     return:
     the relevant model loaded with its weights
     '''
+    # early_stop_callback = EarlyStopping(monitor="val_accuracy", min_delta=0.00, patience=3, verbose=False, mode="max")
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if torch.cuda.is_available():
         gpu_name = torch.cuda.get_device_name(0)
     else:
         gpu_name = "cpu"
-    weights_path = os.path.join('./','model_weights')
+    weights_path = os.path.join('./', 'src', 'model_weights')
 
     if genom == 'linear':
         model = mice.Net()
@@ -101,7 +102,13 @@ def mi_model(genom, n_epochs, max_epochs):
         model = mice.Model()
         model.to(device)
     elif genom == 'new_fcn':
-        model = mice.Modely()
+        model = mice.Modely(input_size=input_size)
+        model.to(device)
+    elif genom == 'mice_conv':
+        model = mice.MiceConv()
+        model.to(device)
+    elif genom == 'sandnet':
+        model = mice.Sandnet(input_size=input_size)
         model.to(device)
 
     if n_epochs != max_epochs and genom == 'linear':
@@ -129,13 +136,35 @@ def mi_model(genom, n_epochs, max_epochs):
     if n_epochs != max_epochs and genom == 'new_fcn':
         print(f'==== new fcn ====\nWeights have been loaded!\nWe are using {gpu_name}')
         PATH = os.path.join(weights_path, 'new_fcn_model_weights.pth')
-        model = mice.Modely()
+        model = mice.Modely(input_size=input_size)
         model.load_state_dict(torch.load(PATH), strict=False)
         model.eval()
         model.to(device)
     elif n_epochs == max_epochs and genom == 'new_fcn':
         PATH = os.path.join(weights_path, 'new_fcn_model_weights.pth')
         print(f'==== new fcn ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
+
+    if n_epochs != max_epochs and genom == 'mice_conv':
+        print(f'==== mice_conv ====\nWeights have been loaded!\nWe are using {gpu_name}')
+        PATH = os.path.join(weights_path, 'mice_conv_model_weights.pth')
+        model = mice.MiceConv()
+        model.load_state_dict(torch.load(PATH), strict=False)
+        model.eval()
+        model.to(device)
+    elif n_epochs == max_epochs and genom == 'mice_conv':
+        PATH = os.path.join(weights_path, 'mice_conv_model_weights.pth')
+        print(f'==== mice_conv ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
+
+    if n_epochs != max_epochs and genom == 'sandnet':
+        print(f'==== sandnet ====\nWeights have been loaded!\nWe are using {gpu_name}')
+        PATH = os.path.join(weights_path, 'sandnet_model_weights.pth')
+        model = mice.Sandnet()
+        model.load_state_dict(torch.load(PATH), strict=False)
+        model.eval()
+        model.to(device)
+    elif n_epochs == max_epochs and genom == 'sandnet':
+        PATH = os.path.join(weights_path, 'sandnet_model_weights.pth')
+        print(f'==== sandnet ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
 
     return model
 
@@ -261,13 +290,13 @@ def loss_function(joint_output, product_output):
     return:
     mutual: the mutual information
     joint_output: the joint lattices we've constructed
-    exp_product: the exponent of the product_output 
+    exp_product: the exponent of the product_output
     """
     exp_product = torch.exp(product_output)
     mutual = torch.mean(joint_output) - torch.log(torch.mean(exp_product))
     return mutual, joint_output, exp_product
 
-def train_one_epoch(model, data_loader, optimizer, ma_rate=0.01):
+def train_one_epoch(window_size, epoch, train_losses, model, data_loader, optimizer, ma_rate=0.01):
     '''
     train one epoch
     
@@ -283,11 +312,17 @@ def train_one_epoch(model, data_loader, optimizer, ma_rate=0.01):
     total_loss = 0
     total_mutual = 0
     for batch_idx, data in enumerate(data_loader):
-        loss, mutual = train_one_step(model, data, optimizer, ma_rate)
+        loss, mutual = train_one_step(window_size, epoch, train_losses, model, data, optimizer, ma_rate)
         total_loss += loss
         total_mutual += mutual
-    return total_loss / len(data_loader), total_mutual / len(data_loader)
-def train_one_step(model, data, optimizer, ma_rate, ma_et=1.0):
+    total_loss = total_loss / len(data_loader)
+    total_mutual = total_mutual / len(data_loader)
+    if epoch > window_size*2:
+        total_mutual = float(mice.loss_lin_ave(current_loss=total_mutual.cpu().detach().numpy(), data=train_losses, window_size=window_size))
+        total_mutual = torch.tensor(total_mutual, requires_grad=True)
+    return total_loss, total_mutual
+
+def train_one_step(window_size, epoch, train_losses, model, data, optimizer, ma_rate, ma_et=1.0):
     '''
     train one batch in the epoch
     
@@ -316,7 +351,7 @@ def train_one_step(model, data, optimizer, ma_rate, ma_et=1.0):
     optimizer.step()
     return loss_train, mutual
 
-def valid_one_epoch(model, data_loader, ma_rate=0.01):
+def valid_one_epoch(window_size, epoch, valid_losses, model, data_loader, ma_rate=0.01):
     '''
     validation of one epoch
     
@@ -332,11 +367,16 @@ def valid_one_epoch(model, data_loader, ma_rate=0.01):
     total_mutual = 0
     for batch_idx, data in enumerate(data_loader):
         with torch.no_grad():
-            loss, mutual = valid_one_step(model, data, ma_rate)
-        total_loss += loss
-        total_mutual += mutual
-    return total_loss / len(data_loader), total_mutual / len(data_loader)
-def valid_one_step(model, data, ma_rate, ma_et=1.0):
+            loss, mutual = valid_one_step(window_size, epoch, valid_losses, model, data, ma_rate)
+            total_loss += loss
+            total_mutual += mutual
+    total_loss = total_loss / len(data_loader)
+    total_mutual = total_mutual / len(data_loader)
+    if epoch > window_size*2:
+        total_mutual = float(mice.loss_lin_ave(current_loss=total_mutual.cpu().detach().numpy(), data=valid_losses, window_size=window_size))
+        total_mutual = torch.tensor(total_mutual, requires_grad=True)
+    return total_loss, total_mutual
+def valid_one_step(window_size, epoch, valid_losses, model, data, ma_rate, ma_et=1.0):
     '''
     validation of one batch in the epoch
     
@@ -358,6 +398,9 @@ def valid_one_step(model, data, ma_rate, ma_et=1.0):
         return 'problem'
     ma_et = (1 - ma_rate) * ma_et + ma_rate * torch.mean(exp_product)
     loss_train = -(torch.mean(joint_output) - (1 / ma_et.mean()).detach() * torch.mean(exp_product))
+    if epoch > window_size*2:
+        loss_train = float(mice.loss_lin_ave(current_loss=loss_train.cpu().detach().numpy(), data=valid_losses, window_size=window_size))
+        loss_train = torch.tensor(loss_train, requires_grad=True)
     return loss_train, mutual
 
 @gin.configurable
@@ -511,6 +554,7 @@ def entropy_fig_together(x_labels, mi_entropy_dependant, mi_entropy_dependant_va
     plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
 
     return None
+
 @gin.configurable
 def entropy_fig_running(x_labels, mi_entropy_dependant, mi_entropy_dependant_valid, genom, figsize):
     '''
@@ -539,6 +583,38 @@ def entropy_fig_running(x_labels, mi_entropy_dependant, mi_entropy_dependant_val
     plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
 
 @gin.configurable
+def ising_fig(num, genom, T, train_losses, valid_losses, figsize):
+    '''
+    Plot the results
+    
+    num: number of the figure
+    genom: the type of architecture we've trained our neural net with
+    num_boxes: the number of boxes we split our space to
+    train_losses: the losses we got from training
+    valid_losses: the losses we got from validating
+    figsize: the size of the figure
+
+    return:
+    mi_train: mutual information gained from training
+    mi_valid: mutual information gained from validating
+    '''
+    plt.figure(num=num, figsize=figsize)
+    plt.title(f'Calculating the ising mi for T = {T}')
+    plt.plot(train_losses, label='train')
+    plt.plot(valid_losses, label='valid')
+    plt.ylabel('Loss')
+    plt.xlabel('epochs')
+    plt.legend()
+    saved_path = os.path.join('./', 'figures', "losses", "ising", genom)
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'ising_T='+str(T).replace('.','_')))
+    plt.figure(num=num).clear()
+    plt.close(num)
+    mi_train, mi_valid = train_losses[-1], valid_losses[-1]
+    
+    return mi_train, mi_valid
+
+@gin.configurable
 def logger(my_str, mod, flag=[], number_combinations=0, flag_message=0, num_boxes=0):
     '''
     prints the results
@@ -549,17 +625,18 @@ def logger(my_str, mod, flag=[], number_combinations=0, flag_message=0, num_boxe
     number_combinations: the lengh of our printing
     flag_message: if we are printing the box size searching or the entropy calculation
     '''
+    message_path = os.path.join('./', 'src', 'mice')
+    mice.folder_checker(message_path)
     if flag_message == 0:
-        message_path = os.path.join('./', 'mice')
-        mice.folder_checker(message_path)
         message_path = os.path.join(message_path, 'message_boxcalc.log')
     elif flag_message == 1:
-        message_path = os.path.join('./', 'mice')
-        mice.folder_checker(message_path)
         message_path = os.path.join(message_path, 'message_entropycalc.log')
+    elif flag_message == 2:
+        message_path = os.path.join(message_path, 'message_isingcalc.log')
+
     try:
         logger.counter += 1
-    except:
+    except Exception:
         logger.counter = 0
 
     if flag == []:
@@ -568,10 +645,12 @@ def logger(my_str, mod, flag=[], number_combinations=0, flag_message=0, num_boxe
         sys.stdout = log_file
         if flag_message == 0:
             print(f'==== log file for the Mutual Information for different number of boxes ====\n\n'
-                f'We have {number_combinations} runs in total\n\n')
+                  f'We have {number_combinations} runs in total\n\n')
         elif flag_message == 1:
             print(f'==== log file for the Mutual Information for different box shapes ====\n\n'
-                f'We split our space into: {num_boxes} boxes.\nWe have {number_combinations} runs in total\n\n')
+                  f'We split our space into: {num_boxes} boxes.\nWe have {number_combinations} runs in total\n\n')
+        elif flag_message == 2:
+            print(f'==== log file for the Mutual Information for ising ====\n\n')
         sys.stdout = sys.__stdout__
         log_file.close()
 
@@ -628,3 +707,93 @@ def print_combinations(my_combinations):
         print(i)
     return None
 
+@gin.configurable
+def exp_ave(data, window_frac):
+    data = np.array(data)
+    window = np.floor(data.shape[0] * window_frac).astype(int)
+    ave_arr = np.zeros((data.shape[0]))
+    mi = data[0]
+    alpha = 2 / float(window + 1)
+    for i in range(data.shape[0]):
+        mi =  ((data[i] - mi) * alpha) + mi
+        ave_arr[i] = mi
+    return ave_arr
+
+@gin.configurable
+def lin_ave(data, window_frac):
+    data = np.array(data)
+    window = np.floor(data.shape[0] * window_frac).astype(int)
+    return [np.mean(data[i:i+window]) for i in range(0,len(data)-window)]
+
+def lin_ave_running(epoch, data, window_size):
+    data = np.array(data)
+    if epoch == 0:
+        return [0]
+    elif epoch < window_size:
+        return [np.mean(data[i:i+epoch]) for i in range(0,len(data)-epoch)]
+    return [np.mean(data[i:i+window_size]) for i in range(0,len(data)-window_size)]
+
+def loss_lin_ave(current_loss, data, window_size):
+    current_data = data.copy()
+    current_data.append(current_loss)
+    current_data = np.array(current_data)
+    return current_data[-window_size:].mean()
+
+def loss_exp_ave(current_loss, data, window_size):
+    weights = np.linspace(1, 10, 10, dtype='int')
+    weights = np.exp(weights)
+    current_data = data.copy()
+    current_data.append(current_loss)
+    current_data = np.array(current_data)
+    return np.ma.average(current_data, weights=weights)
+
+    
+@gin.configurable
+def ising_temp_fig(df, figsize, genom):
+    '''
+    Plot the mutual information of ising as a function of the temperature
+
+    figsize: the size of the figure
+    df: dataframe with our data
+
+    return:
+    None
+    '''
+    plt.figure(num=0, figsize=figsize)
+    plt.clf()
+    plt.xlabel('Temperature')
+    plt.ylabel('Mutual Information')
+    plt.title('Mutual Information as a function of the Temperature')
+    plt.tight_layout()
+    sns.relplot(x='T', y='MI', data=df)
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "ising", genom)
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
+
+    return None
+
+@gin.configurable
+def ising_temp_fig_running(df, figsize, genom):
+    '''
+    Plot the mutual information of ising as a function of the temperature
+
+    figsize: the size of the figure
+    df: dataframe with our data
+
+    return:
+    None
+    '''
+    plt.figure(num=0, figsize=figsize)
+    plt.clf()
+    plt.xlabel('Temperature')
+    plt.ylabel('Mutual Information')
+    plt.title('Mutual Information as a function of the Temperature')
+    plt.tight_layout()
+    sns.relplot(x='T', y='MI', data=df)
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "ising", genom)
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
+
+    return None
