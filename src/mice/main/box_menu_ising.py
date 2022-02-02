@@ -50,7 +50,7 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
     y_size = list_ising[0].shape[1]
     z_size = list_ising[0].shape[2]
     input_size = x_size * y_size * z_size
-    model = mice.mi_model(genom=genom, n_epochs=n_epochs, max_epochs=max_epochs, input_size=input_size)
+    model = mice.mi_model(genom=genom, n_epochs=n_epochs, max_epochs=max_epochs, input_size=batch_size*18)
     optimizer = Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     lr_scheduler = mice.LRScheduler(optimizer)
     early_stopping = mice.EarlyStopping()
@@ -91,10 +91,10 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
         valid_loss, valid_mutual = mice.valid_one_epoch(window_size=window_size, epoch=epoch, valid_losses=valid_losses, model=model, data_loader=loader)
         valid_losses.append(valid_mutual.cpu().detach().numpy())
         
-        # lr_scheduler(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=window_size))
+        # lr_scheduler(mice.lin_adve_running(epoch=epoch, data=valid_losses, window_size=window_size))
         # early_stopping(mice.lin_ave_running(epoch=epoch, data=valid_losses, window_size=window_size))
         lr_scheduler(valid_losses[-1])
-        if epoch > 100:
+        if epoch > 300:
             early_stopping(valid_losses[-1])
             if early_stopping.early_stop:
                 break
@@ -115,6 +115,7 @@ def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weig
 def ising_temp():
     my_path = os.path.join('./', 'ising_h5py')
     Ts = [round(T,2) for T in np.linspace(0.1, 4, 40)]
+
     mi = np.zeros(len(Ts))
     for idx, T in enumerate(Ts):
         if T.is_integer():

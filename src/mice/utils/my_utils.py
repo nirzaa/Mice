@@ -107,6 +107,9 @@ def mi_model(genom, n_epochs, max_epochs, input_size=100):
     elif genom == 'mice_conv':
         model = mice.MiceConv()
         model.to(device)
+    elif genom == 'sandnet':
+        model = mice.Sandnet(input_size=input_size)
+        model.to(device)
 
     if n_epochs != max_epochs and genom == 'linear':
         print(f'==== linear ====\nWeights have been loaded!\nWe are using {gpu_name}')
@@ -151,6 +154,17 @@ def mi_model(genom, n_epochs, max_epochs, input_size=100):
     elif n_epochs == max_epochs and genom == 'mice_conv':
         PATH = os.path.join(weights_path, 'mice_conv_model_weights.pth')
         print(f'==== mice_conv ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
+
+    if n_epochs != max_epochs and genom == 'sandnet':
+        print(f'==== sandnet ====\nWeights have been loaded!\nWe are using {gpu_name}')
+        PATH = os.path.join(weights_path, 'sandnet_model_weights.pth')
+        model = mice.Sandnet()
+        model.load_state_dict(torch.load(PATH), strict=False)
+        model.eval()
+        model.to(device)
+    elif n_epochs == max_epochs and genom == 'sandnet':
+        PATH = os.path.join(weights_path, 'sandnet_model_weights.pth')
+        print(f'==== sandnet ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
 
     return model
 

@@ -5,7 +5,8 @@ from mice.neural_net.architectures import (
     MiceConv,
     Net,
     Model,
-    Modely
+    Modely,
+    Sandnet
 )
 
 from mice.utils.my_utils import (
