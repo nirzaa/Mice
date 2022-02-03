@@ -70,7 +70,7 @@ def sizer(num_boxes, box_frac):
     the size of our box we are calculating the mutual information to
     '''
     x_size, y_size, z_size = int(np.floor(num_boxes*box_frac)), int(np.floor(num_boxes*box_frac)), int(np.floor(num_boxes*box_frac))
-    x_size, y_size, z_size = 1, y_size - y_size%2, z_size - z_size%2
+    x_size, y_size, z_size =  x_size - x_size%2, y_size - y_size%2, z_size - z_size%2
     print(f'\nWe split the space into {num_boxes}x{num_boxes}x{num_boxes} boxes\n',
           f'The size of the small box is: ({x_size}, {y_size}, {z_size})\n',
           f'='*50)
@@ -222,7 +222,7 @@ def boxes_maker(num_boxes, sample, flag):
         boxes_tensor[flag_torch == 1] = 1
 
     elif flag == 2:
-        boxes_tensor = np.zeros((1, num_boxes, num_boxes))
+        boxes_tensor = np.zeros((num_boxes, num_boxes, num_boxes))
         i = np.random.randint(low=0, high=boxes_tensor.shape[0])
         j = np.random.randint(low=0, high=boxes_tensor.shape[1])
         k = np.random.randint(low=0, high=boxes_tensor.shape[2])
@@ -272,7 +272,7 @@ def lattices_generator(num_samples, samples_per_snapshot, R, num_frames, num_box
         else:
             k = R.randint(0, z_steps+1)
 
-        lattices.append(my_tensor[i:i+x_size, j:j+y_size, k:k + z_size])
+        lattices.append(np.expand_dims(my_tensor[i:i+x_size, j:j+y_size, k:k + z_size], axis=0))
         cntr += 1
         if cntr == num_samples:
             return lattices

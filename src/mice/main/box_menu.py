@@ -40,24 +40,15 @@ def box_runner(num_boxes, box_frac, idx, T, max_epochs, batch_size, freq_print, 
     R = np.random.RandomState(seed=0)
     mi_num_box_dependant = []
     mi_num_box_dependant_valid = []
-        
-    # list_ising = mice.ising_runner(kT=kT, R=R)
-    with h5py.File(os.path.join('./', 'ising_h5py', f'ising_data_64_{T}.h5'), 'r') as f:
-        n1 = np.array(f.get('dataset_1'))
-        n1 = np.expand_dims(n1, axis=1)
-        list_ising = list(n1)
-    list_ising = [np.zeros((1, 4, 4, 4)) for i in range(750000)]
-    for i in list_ising:
-        x = R.choice(range(4), replace=False)
-        y = R.choice(range(4), replace=False)
-        z = R.choice(range(4), replace=False)
-        i[0, x, y,  z] = 1
-        i[i==0] = -1
+    sizes = mice.sizer(num_boxes=num_boxes, box_frac=box_frac)
+    num_frames = mice.frames()
+    lattices = mice.lattices_generator(R=R, num_frames=num_frames, num_boxes=num_boxes, sizes=sizes)
+    list_ising = lattices.copy()
     x_size = list_ising[0].shape[0]
     y_size = list_ising[0].shape[1]
     z_size = list_ising[0].shape[2]
     input_size = x_size * y_size * z_size
-    input_size = 16
+    input_size = 8
     model = mice.mi_model(genom=genom, n_epochs=n_epochs, max_epochs=max_epochs, input_size=input_size)
     optimizer = Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     lr_scheduler = mice.LRScheduler(optimizer)
