@@ -1,5 +1,5 @@
 ==== log file for the Mutual Information for ising ====
 
 
-0 .  MI train for ising, T = 0.1 is: 0.71 
+0 .  MI train for num boxes, num_boxes = 6 is: 0.16 
 

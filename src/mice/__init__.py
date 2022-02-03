@@ -45,7 +45,6 @@ from mice.utils.my_utils import (
 
 from mice.main.box_menu import (
     box_runner,
-    box_ising_temp,
     box_caller
 )
 
