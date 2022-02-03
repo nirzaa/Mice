@@ -814,3 +814,53 @@ def ising_temp_fig_running(df, figsize, genom):
     plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
 
     return None
+
+@gin.configurable
+def box_temp_fig_running(df, figsize, genom):
+    '''
+    Plot the mutual information of ising as a function of the temperature
+
+    figsize: the size of the figure
+    df: dataframe with our data
+
+    return:
+    None
+    '''
+    plt.figure(num=0, figsize=figsize)
+    plt.clf()
+    plt.xlabel('Box sizes')
+    plt.ylabel('Mutual Information')
+    plt.title('Mutual Information as a function of the Box size')
+    plt.tight_layout()
+    sns.relplot(x='number of splits of space', y='MI', data=df)
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "box_size_search", genom)
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'simulation_running'))
+
+    return None
+
+@gin.configurable
+def box_temp_fig(df, figsize, genom):
+    '''
+    Plot the mutual information of ising as a function of the temperature
+
+    figsize: the size of the figure
+    df: dataframe with our data
+
+    return:
+    None
+    '''
+    plt.figure(num=0, figsize=figsize)
+    plt.clf()
+    plt.xlabel('Box sizes')
+    plt.ylabel('Mutual Information')
+    plt.title('Mutual Information as a function of the Box size')
+    plt.tight_layout()
+    sns.relplot(x='number of splits of space', y='MI', data=df)
+    plt.legend()
+    saved_path = os.path.join('./', "figures", "losses", "box_size_search", genom)
+    mice.folder_checker(saved_path)
+    plt.savefig(fname=os.path.join(saved_path, 'all_mi_together'))
+
+    return None

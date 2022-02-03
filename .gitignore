@@ -13,6 +13,7 @@ myenv/
 *.h5
 *.0
 ising_data/
+*.pth
 
 .Python
 build/
@@ -125,3 +126,4 @@ dmypy.json
 
 *.h5
 *.0
+*.pth

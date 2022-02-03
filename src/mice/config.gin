@@ -10,7 +10,13 @@ box_runner.box_frac = 0.5
 box_runner.window_size = 10
 box_runner.num_samples = 8e2
 box_runner.transfer_epochs = 3e3
-box_caller.box_sizes = [6, 8, 10, 12]
+# box_caller.box_sizes = [6, 8, 10, 12]
+
+box_temp_fig_running.figsize = (12, 6)
+box_temp_fig_running.genom = 'sandnet3d'
+
+box_temp_fig.figsize = (12, 6)
+box_temp_fig.genom = 'sandnet3d'
 
 #======================#
 

@@ -95,17 +95,26 @@ def box_runner(num_boxes, box_frac, idx, max_epochs, batch_size, freq_print, gen
             print(f'\nMI for train {train_losses[-1]}, val {valid_losses[-1]} at step {epoch}')
         
     torch.save(model.state_dict(), PATH)
-    mice.logger(f'MI train for num boxes, num_boxes = {num_boxes} is: {train_losses[-1]:.2f}', flag_message=2)
+    mice.logger(f'MI train for num boxes, num_boxes = {num_boxes} is: {train_losses[-1]:.2f}', flag_message=0)
     mice.box_fig(num=0, genom=genom, num_boxes=num_boxes, train_losses=train_losses, valid_losses=valid_losses)
     mi_num_box_dependant.append(train_losses[-1])
     mi_num_box_dependant_valid.append(valid_losses[-1])
     mi_num_box_dependant = np.array(mi_num_box_dependant)
     return mi_num_box_dependant[-1]
 
-@gin.configurable
-def box_caller(box_sizes):
-     for idx, num_boxes in enumerate(box_sizes):
-         box_runner(num_boxes=num_boxes, idx=idx)
+def box_caller():
+    # box_sizes = [4, 6, 10, 14, 18]
+    box_sizes = [4, 6, 18, 25]
+    mi = np.zeros(len(box_sizes))
+    for idx, num_boxes in enumerate(box_sizes):
+        print(f'Running on number of boxes = {num_boxes}')
+        print('='*50)
+        current_mi = mice.box_runner(num_boxes=num_boxes, idx=idx)
+        mi[idx] = current_mi
+        df = pd.DataFrame({'number of splits of space': box_sizes, 'MI': mi})
+        mice.box_temp_fig_running(df=df)
+    df = pd.DataFrame({'number of splits of space': box_sizes, 'MI': mi})
+    mice.box_temp_fig(df=df)
 
 if __name__ == '__main__':
     mice.box_caller()

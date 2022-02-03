@@ -40,7 +40,9 @@ from mice.utils.my_utils import (
     ising_temp_fig,
     ising_temp_fig_running,
     lin_ave_running,
-    loss_lin_ave
+    loss_lin_ave,
+    box_temp_fig_running,
+    box_temp_fig
 )
 
 from mice.main.box_menu import (
