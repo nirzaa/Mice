@@ -3,15 +3,6 @@
 We have 1 runs in total
 
 
-0 .  MI train for 16 boxes is: 0.67
-The fraction we split to is: 0.5, therefore the small box size is: 1x16x16 
-
-1 .  MI train for 16 boxes is: 0.75
-The fraction we split to is: 0.5, therefore the small box size is: 1x16x16 
-
-2 .  MI train for 16 boxes is: 0.88
-The fraction we split to is: 0.5, therefore the small box size is: 1x16x16 
-
-3 .  MI train for 16 boxes is: 0.54
-The fraction we split to is: 0.5, therefore the small box size is: 1x16x16 
+0 .  MI train for 6 boxes is: 0.57
+The fraction we split to is: 1, therefore the small box size is: 6x6x6 
 

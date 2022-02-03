@@ -39,7 +39,7 @@ def read_data():
     return:
     blocks: the coordinates of our particles in different frames in time
     '''
-    my_hf = h5py.File(os.path.join('./','src','data','data.h5'), 'r')
+    my_hf = h5py.File(os.path.join('./','data','data.h5'), 'r')
     n1 = my_hf.get('dataset_1')
     blocks = np.array(n1)
     my_hf.close()
@@ -70,7 +70,7 @@ def sizer(num_boxes, box_frac):
     the size of our box we are calculating the mutual information to
     '''
     x_size, y_size, z_size = int(np.floor(num_boxes*box_frac)), int(np.floor(num_boxes*box_frac)), int(np.floor(num_boxes*box_frac))
-    x_size, y_size, z_size = x_size - x_size%2, y_size - y_size%2, z_size - z_size%2
+    x_size, y_size, z_size = 1, y_size - y_size%2, z_size - z_size%2
     print(f'\nWe split the space into {num_boxes}x{num_boxes}x{num_boxes} boxes\n',
           f'The size of the small box is: ({x_size}, {y_size}, {z_size})\n',
           f'='*50)
@@ -109,6 +109,9 @@ def mi_model(genom, n_epochs, max_epochs, input_size=100):
         model.to(device)
     elif genom == 'sandnet':
         model = mice.Sandnet(input_size=input_size)
+        model.to(device)
+    elif genom == 'sandnet3d':
+        model = mice.Sandnet3d(input_size=input_size)
         model.to(device)
 
     if n_epochs != max_epochs and genom == 'linear':
@@ -166,6 +169,18 @@ def mi_model(genom, n_epochs, max_epochs, input_size=100):
         PATH = os.path.join(weights_path, 'sandnet_model_weights.pth')
         print(f'==== sandnet ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
 
+    if n_epochs != max_epochs and genom == 'sandnet3d':
+        print(f'==== sandnet3d ====\nWeights have been loaded!\nWe are using {gpu_name}')
+        PATH = os.path.join(weights_path, 'sandnet3d_model_weights.pth')
+        model = mice.Sandnet()
+        model.load_state_dict(torch.load(PATH), strict=False)
+        model.eval()
+        model.to(device)
+    elif n_epochs == max_epochs and genom == 'sandnet3d':
+        PATH = os.path.join(weights_path, 'sandnet3d_model_weights.pth')
+        print(f'==== sandnet3d ====\nThere are no weights, this is the first run!\nWe are using {gpu_name}')
+
+
     return model
 
 @gin.configurable
@@ -207,7 +222,7 @@ def boxes_maker(num_boxes, sample, flag):
         boxes_tensor[flag_torch == 1] = 1
 
     elif flag == 2:
-        boxes_tensor = np.zeros((num_boxes, num_boxes, num_boxes))
+        boxes_tensor = np.zeros((1, num_boxes, num_boxes))
         i = np.random.randint(low=0, high=boxes_tensor.shape[0])
         j = np.random.randint(low=0, high=boxes_tensor.shape[1])
         k = np.random.randint(low=0, high=boxes_tensor.shape[2])
@@ -237,10 +252,12 @@ def lattices_generator(num_samples, samples_per_snapshot, R, num_frames, num_box
     x_size, y_size, z_size = sizes
     num_sample = R.randint(num_frames)
     my_tensor = mice.boxes_maker(num_boxes=num_boxes, sample=num_sample)  # returns a tensor
-    leny = my_tensor.shape[0]
-    x_steps = leny - x_size
-    y_steps = leny - y_size
-    z_steps = leny - z_size
+    leny_x = my_tensor.shape[0]
+    leny_y = my_tensor.shape[1]
+    leny_z = my_tensor.shape[2]
+    x_steps = leny_x - x_size
+    y_steps = leny_y - y_size
+    z_steps = leny_z - z_size
     while True:
         if x_steps == 0:
             i = 0
@@ -259,7 +276,7 @@ def lattices_generator(num_samples, samples_per_snapshot, R, num_frames, num_box
         cntr += 1
         if cntr == num_samples:
             return lattices
-        elif cntr % (samples_per_snapshot+1) == 0:
+        elif cntr % (samples_per_snapshot) == 0:
             return lattices_generator(R=R, num_frames=num_frames, num_boxes=num_boxes, sizes=sizes, cntr=cntr, lattices=lattices)
 
 def lattice_splitter(lattices, axis):

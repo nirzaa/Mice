@@ -8,7 +8,7 @@ sys.path.append(my_path)
 import mice
 
 @gin.configurable
-def file_load(number_lines):
+def file_load(file_name, number_lines):
     '''
     This function will take the dump.0 file that we will get by running the simulation,
     and will generate an .h5 file for future processing of the data.
@@ -20,7 +20,7 @@ def file_load(number_lines):
     '''
     path_data = os.path.join('./', 'data')
 
-    with open(os.path.join(path_data, 'dump.0')) as f:
+    with open(os.path.join(path_data, file_name)) as f:
         lines = [next(f) for x in range(number_lines)]
     f.close()
 
@@ -45,5 +45,7 @@ if __name__ == '__main__':
     This module will take the dump.0 file that we will get by running the simulation,
     and will generate an .h5 file for future processing of the data.
     '''
-    mice.file_load()
+    file_name = 'dump.0'
+
+    mice.file_load(file_name=file_name)
     

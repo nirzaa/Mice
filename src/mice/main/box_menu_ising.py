@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numba
 
 @gin.configurable
-def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weight_decay, box_frac, num_samples, transfer_epochs, window_size=3):
+def ising_box_runner(idx, T, max_epochs, batch_size, freq_print, genom, lr, weight_decay, num_samples, transfer_epochs, window_size=3):
     '''
     Running the neural network in order to calculate the right number of boxes to split our space into
 
