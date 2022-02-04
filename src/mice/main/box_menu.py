@@ -85,15 +85,20 @@ def box_runner(num_boxes, box_frac, idx, max_epochs, batch_size, freq_print, gen
         valid_loss, valid_mutual = mice.valid_one_epoch(window_size=window_size, epoch=epoch, valid_losses=valid_losses, model=model, data_loader=loader)
         valid_losses.append(valid_mutual.cpu().detach().numpy())
 
-        lr_scheduler(valid_losses[-1])
-        if epoch > 300:
-            early_stopping(valid_losses[-1])
+        train_losses_exp = list(mice.exp_ave(data=train_losses))
+        valid_losses_exp = list(mice.exp_ave(data=valid_losses))
+
+        if epoch > 500:
+            lr_scheduler(valid_losses_exp[-1])
+            early_stopping(valid_losses_exp[-1])
             if early_stopping.early_stop:
                 break
         cntr += 1
         if epoch % freq_print == 0:
-            print(f'\nMI for train {train_losses[-1]}, val {valid_losses[-1]} at step {epoch}')
+            print(f'\nMI for train {train_losses_exp[-1]}, val {valid_losses_exp[-1]} at step {epoch}')
         
+    train_losses = mice.exp_ave(data=train_losses)
+    valid_losses = mice.exp_ave(data=valid_losses)
     torch.save(model.state_dict(), PATH)
     mice.logger(f'MI train for num boxes, num_boxes = {num_boxes} is: {train_losses[-1]:.2f}', flag_message=0)
     mice.box_fig(num=0, genom=genom, num_boxes=num_boxes, train_losses=train_losses, valid_losses=valid_losses)
@@ -104,7 +109,9 @@ def box_runner(num_boxes, box_frac, idx, max_epochs, batch_size, freq_print, gen
 
 def box_caller():
     # box_sizes = [4, 6, 10, 14, 18]
-    box_sizes = [4, 6, 18, 25]
+    # box_sizes = [4, 6, 18, 25]
+    box_sizes = list(np.linspace(4, 80, 77, dtype='int'))
+
     mi = np.zeros(len(box_sizes))
     for idx, num_boxes in enumerate(box_sizes):
         print(f'Running on number of boxes = {num_boxes}')

@@ -1,8 +1,23 @@
 ==== log file for the Mutual Information for different number of boxes ====
 
-We have 1 runs in total
+We have 0 runs in total
 
 
-0 .  MI train for 6 boxes is: 0.57
-The fraction we split to is: 1, therefore the small box size is: 6x6x6 
+0 .  MI train for num boxes, num_boxes = 4 is: -0.00 
+
+1 .  MI train for num boxes, num_boxes = 5 is: 0.01 
+
+2 .  MI train for num boxes, num_boxes = 6 is: 0.14 
+
+3 .  MI train for num boxes, num_boxes = 7 is: 0.49 
+
+4 .  MI train for num boxes, num_boxes = 8 is: 6.54 
+
+5 .  MI train for num boxes, num_boxes = 9 is: 4.54 
+
+6 .  MI train for num boxes, num_boxes = 10 is: 7.48 
+
+7 .  MI train for num boxes, num_boxes = 11 is: 7.23 
+
+8 .  MI train for num boxes, num_boxes = 12 is: 10.08 
 
