@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 ==== log file for the Mutual Information for ising ====
 
 
@@ -8,4 +9,62 @@
 2 .  MI train for num boxes, num_boxes = 18 is: 5.68 
 
 3 .  MI train for num boxes, num_boxes = 25 is: 6.51 
+=======
+==== log file for the Mutual Information for different number of boxes ====
+
+We have 0 runs in total
+
+
+0 .  MI train for num boxes, num_boxes = 4 is: -0.00 
+
+1 .  MI train for num boxes, num_boxes = 5 is: 0.01 
+
+2 .  MI train for num boxes, num_boxes = 6 is: 0.10 
+
+3 .  MI train for num boxes, num_boxes = 7 is: 0.49 
+
+4 .  MI train for num boxes, num_boxes = 8 is: 5.84 
+
+5 .  MI train for num boxes, num_boxes = 9 is: 2.94 
+
+6 .  MI train for num boxes, num_boxes = 10 is: 4.28 
+
+7 .  MI train for num boxes, num_boxes = 11 is: 5.56 
+
+8 .  MI train for num boxes, num_boxes = 12 is: 8.78 
+
+9 .  MI train for num boxes, num_boxes = 13 is: 9.04 
+
+10 .  MI train for num boxes, num_boxes = 14 is: 8.03 
+
+11 .  MI train for num boxes, num_boxes = 15 is: 7.06 
+
+12 .  MI train for num boxes, num_boxes = 16 is: 7.51 
+
+13 .  MI train for num boxes, num_boxes = 17 is: 8.72 
+
+14 .  MI train for num boxes, num_boxes = 18 is: 9.12 
+
+15 .  MI train for num boxes, num_boxes = 19 is: 7.75 
+
+16 .  MI train for num boxes, num_boxes = 20 is: 8.96 
+
+17 .  MI train for num boxes, num_boxes = 21 is: 8.33 
+
+18 .  MI train for num boxes, num_boxes = 22 is: 9.34 
+
+19 .  MI train for num boxes, num_boxes = 23 is: 9.01 
+
+20 .  MI train for num boxes, num_boxes = 24 is: 5.81 
+
+21 .  MI train for num boxes, num_boxes = 25 is: 8.94 
+
+22 .  MI train for num boxes, num_boxes = 26 is: 5.42 
+
+23 .  MI train for num boxes, num_boxes = 27 is: inf 
+
+24 .  MI train for num boxes, num_boxes = 28 is: 3.64 
+
+25 .  MI train for num boxes, num_boxes = 29 is: inf 
+>>>>>>> Stashed changes
 
