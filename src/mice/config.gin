@@ -1,6 +1,6 @@
 import mice.main.box_menu
 
-box_runner.max_epochs = 2e4
+box_runner.max_epochs = 4e4
 box_runner.batch_size = 32
 box_runner.freq_print = 1e2
 box_runner.genom = 'sandnet3d'
@@ -9,7 +9,7 @@ box_runner.weight_decay = 1e-4
 box_runner.box_frac = 0.5
 box_runner.window_size = 10
 box_runner.num_samples = 8e2
-box_runner.transfer_epochs = 2e4
+box_runner.transfer_epochs = 4e4
 # box_caller.box_sizes = [6, 8, 10, 12]
 
 box_temp_fig_running.figsize = (12, 6)
@@ -85,9 +85,9 @@ ising_runner.J = 1
 
 import mice.utils.pytorch_modules
 
-LRScheduler.patience = 30
+LRScheduler.patience = 500
 LRScheduler.min_lr = 1e-4
 LRScheduler.factor = 0.5
-EarlyStopping.patience = 1000
+EarlyStopping.patience = 5000
 EarlyStopping.min_delta = 0
 EarlyStopping.verbose = False
