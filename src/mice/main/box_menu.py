@@ -110,7 +110,8 @@ def box_runner(num_boxes, box_frac, idx, max_epochs, batch_size, freq_print, gen
 def box_caller():
     # box_sizes = [4, 6, 10, 14, 18]
     # box_sizes = [4, 6, 18, 25]
-    box_sizes = list(np.linspace(4, 80, 77, dtype='int'))
+    # box_sizes = list(np.linspace(4, 80, 77, dtype='int'))
+    box_sizes = list(np.arange(4, 80, 2, dtype='int'))
 
     mi = np.zeros(len(box_sizes))
     for idx, num_boxes in enumerate(box_sizes):
