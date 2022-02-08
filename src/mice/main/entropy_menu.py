@@ -2,35 +2,42 @@ import os
 import numpy as np
 import gin
 import mice
-import torch
-from itertools import combinations_with_replacement
 from torch.optim import Adam
 from tqdm import tqdm
 from torch.utils.data import Dataset, DataLoader
+import torch
 from sklearn.model_selection import train_test_split
-
+import random
+import pandas as pd
+import h5py
+import matplotlib.pyplot as plt
+import numba
+from itertools import combinations_with_replacement
 
 @gin.configurable
-def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, freq_print):
+def entropy_runner(num_boxes, max_epochs, batch_size, freq_print, genom, lr, weight_decay, num_samples, transfer_epochs, window_size=3):
     '''
-    Running the neural network in order to calculate the entropy of our system
-    
-    num_boxes: the number of boxes to split our space to
+    Running the neural network in order to calculate the right number of boxes to split our space into
+
+    box_sizes: the number of boxes in each axis to split our space into
     max_epochs: the maximum number of epochs to use in the beginning
+    batch_size: the size of the batch
+    freq_print: the number of epochs between printing to the user the mutual information
+    axis: the axis we will split our boxes into, in order to calculate the mutual information
     genom: the type of architecture we are going to use in the neural net
     lr: the learning rate
     weight_decay: regularization technique by adding a small penalty
-    batch_size: the size of the batch
-    freq_print: the number of epochs between printing to the user the mutual information
-    
+    box_frac: what is the value of the box from the total space we are calculating the mutual information to
+
     return:
     None
     '''
+
     weights_path = os.path.join('./', 'src', 'model_weights')
     PATH = os.path.join(weights_path, genom+'_model_weights.pth')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    R = np.random.RandomState(seed=1)
-
+    R = np.random.RandomState(seed=0)
+    
     num_frames = mice.frames()
     cntr = 0
     mi_entropy_dependant = []
@@ -41,22 +48,48 @@ def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, f
     mice.print_combinations(my_combinations)
     number_combinations = len(my_combinations)
     x_labels = []
-    for i, j, k in my_combinations:
+    saved_directory = os.path.join('./data', f'{num_boxes}')
+ 
+    for idx, (i, j, k) in enumerate(my_combinations):
+        if idx == 0: n_epochs = max_epochs
+        elif idx != 0: n_epochs = transfer_epochs
+
+        sizes = (i, j, k)
+        with h5py.File(os.path.join(saved_directory, f'{i}_{j}_{k}', 'data.h5'), "r") as hf:
+            lattices = np.array(hf.get('dataset_1'))
+        # lattices = mice.lattices_generator(R=R, num_frames=num_frames, num_boxes=num_boxes, sizes=sizes)
+        
+        list_ising = lattices.copy()
+        x_size = list_ising[0].shape[1]
+        y_size = list_ising[0].shape[2]
+        z_size = list_ising[0].shape[3]
+        # input_size = x_size * y_size * z_size
+        input_size = int(8 * ((x_size-2)/1+1) * ((y_size-2)/1+1) * ((z_size-2)/1+1))
+        model = mice.mi_model(genom=genom, n_epochs=n_epochs, max_epochs=max_epochs, input_size=input_size)
+        optimizer = Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+        lr_scheduler = mice.LRScheduler(optimizer)
+        early_stopping = mice.EarlyStopping()
+        train_losses = []
+        valid_losses = []
         axis = int(np.argmax((i, j, k)))
         print('='*50)
         print(f'The size of the small boxes is: {i}x{j}x{k}\n'
               f'Therefore we cut on the {axis} axis\n'
               f'Building the boxes... we are going to start training...')
-        epochs = (max_epochs // (cntr+1))
-        epochs = int(np.ceil((max_epochs * 2) // ((i*j*k)**(1/3))))
+        axis += 1
+        epochs = (n_epochs // (cntr+1))
+        epochs = int(np.ceil((n_epochs * 2) // ((i*j*k)**(1/3))))
         epochs = max(epochs, 1)
-        sizes = (i, j, k)
-        model = mice.mi_model(genom=genom, n_epochs=max_epochs, max_epochs=max_epochs)
+        model = mice.mi_model(genom=genom, n_epochs=n_epochs, max_epochs=max_epochs, input_size=input_size)
         optimizer = Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
         train_losses = []
         valid_losses = []
-        for epoch in tqdm(range(int(max_epochs))):
-            lattices = mice.lattices_generator(R=R, num_frames=num_frames, num_boxes=num_boxes, sizes=sizes)
+
+        for epoch in tqdm(range(int(n_epochs))):
+            # lattices = mice.lattices_generator(R=R, num_frames=num_frames, num_boxes=num_boxes, sizes=sizes)
+            # list_ising = lattices.copy()
+            place = random.sample(range(len(list_ising)), k=int(num_samples))
+            lattices = np.array(list_ising)[place]
             left_lattices, right_lattices = mice.lattice_splitter(lattices=lattices, axis=axis)
             joint_lattices = np.concatenate((left_lattices, right_lattices), axis=axis + 1)
             right_lattices_random = right_lattices.copy()
@@ -64,7 +97,6 @@ def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, f
             product_lattices = np.concatenate((left_lattices, right_lattices_random), axis=axis + 1)
             joint_lattices, joint_valid, product_lattices, product_valid = train_test_split(joint_lattices, product_lattices,
                                                                                             test_size=0.2, random_state=42)
-
             AB_joint, AB_product = torch.tensor(joint_lattices), torch.tensor(product_lattices)
             AB_joint_train, AB_product_train = AB_joint.to(device), AB_product.to(device)
             dataset_train = mice.MiceDataset(x_joint=AB_joint_train, x_product=AB_product_train)
@@ -74,31 +106,40 @@ def entropy_runner(num_boxes, max_epochs, genom, lr, weight_decay, batch_size, f
             dataset_valid = mice.MiceDataset(x_joint=AB_joint_valid, x_product=AB_product_valid)
 
             loader = DataLoader(dataset=dataset_train, batch_size=batch_size, num_workers=0, shuffle=False)
-
-            loss_train, mutual_train = mice.train_one_epoch(model=model, data_loader=loader, optimizer=optimizer)
+            loss_train, mutual_train = mice.train_one_epoch(window_size=window_size, epoch=epoch, train_losses=train_losses, model=model, data_loader=loader, optimizer=optimizer)
             train_losses.append(mutual_train.cpu().detach().numpy())
 
             loader = DataLoader(dataset=dataset_valid, batch_size=batch_size, num_workers=0, shuffle=False)
-            valid_loss, valid_mutual = mice.valid_one_epoch(model=model, data_loader=loader)
+            valid_loss, valid_mutual = mice.valid_one_epoch(window_size=window_size, epoch=epoch, valid_losses=valid_losses, model=model, data_loader=loader)
             valid_losses.append(valid_mutual.cpu().detach().numpy())
+
+            train_losses_exp = list(mice.exp_ave(data=train_losses))
+            valid_losses_exp = list(mice.exp_ave(data=valid_losses))
+
+            if epoch > 500:
+                lr_scheduler(valid_losses_exp[-1])
+                early_stopping(valid_losses_exp[-1])
+                if early_stopping.early_stop:
+                    break
             
-            if train_losses == 'problem' or valid_losses == 'problem':
-                return 'problem'
             if epoch % freq_print == 0:
-                print(f'\nMI for train {train_losses[-1]}, val {valid_losses[-1]} at step {epoch}')
+                print(f'\nMI for train {train_losses_exp[-1]}, val {valid_losses_exp[-1]} at step {epoch}')
+        
         cntr += 1
         x_labels.append(str((i, j, k)))
         torch.save(model.state_dict(), PATH)
-        mice.entropy_fig(num=cntr, genom=genom, sizes=sizes, train_losses=train_losses, valid_losses=valid_losses)
-        mice.logger(f'The MI train for ({i}, {j}, {k}) box is: {train_losses[-1]:.2f}', number_combinations=number_combinations, flag_message=1, num_boxes=num_boxes)
+        train_losses = mice.exp_ave(data=train_losses)
+        valid_losses = mice.exp_ave(data=valid_losses)
         mi_entropy_dependant.append(train_losses[-1])
         mi_entropy_dependant_valid.append(valid_losses[-1])
-        mice.entropy_fig_running(x_labels=x_labels[:i+1], mi_entropy_dependant=mi_entropy_dependant, mi_entropy_dependant_valid=mi_entropy_dependant_valid, genom=genom)
+        mice.entropy_fig(num=cntr, genom=genom, sizes=sizes, train_losses=train_losses, valid_losses=valid_losses)
+        mice.logger(f'The MI train for ({i}, {j}, {k}) box is: {train_losses[-1]:.2f}', number_combinations=number_combinations, flag_message=1, num_boxes=num_boxes)
+        mice.entropy_fig_running(x_labels=x_labels, mi_entropy_dependant=mi_entropy_dependant, mi_entropy_dependant_valid=mi_entropy_dependant_valid, genom=genom)
+    
     mice.entropy_fig_together(x_labels=x_labels, mi_entropy_dependant=mi_entropy_dependant, mi_entropy_dependant_valid=mi_entropy_dependant_valid, genom=genom)
     mi_entropy_dependant = np.array(mi_entropy_dependant)
     mice.logger(f'The total MI train is: {mi_entropy_dependant.sum():.2f}', number_combinations=number_combinations, flag_message=1)
     return None
-
 
 if __name__ == '__main__':
     mice.entropy_runner()

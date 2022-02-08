@@ -148,7 +148,7 @@ class Sandnet3d(nn.Module):
     def __init__(self, input_size=576):
         super(Sandnet3d, self).__init__()
 
-
+        self.input_size = input_size
         self.layer1 = nn.Conv3d(in_channels=1, out_channels=8, kernel_size=2, stride=1, padding=0,)
         self.layer2 = nn.Conv3d(in_channels=8, out_channels=16, kernel_size=2, stride=1, padding=0,)
         self.layer3 = nn.MaxPool3d(kernel_size=2, stride=2, padding=0,)

@@ -5,25 +5,7 @@ We have 0 runs in total
 
 0 .  MI train for num boxes, num_boxes = 4 is: 0.00 
 
-1 .  MI train for num boxes, num_boxes = 6 is: 0.16 
+1 .  MI train for num boxes, num_boxes = 6 is: 0.15 
 
-2 .  MI train for num boxes, num_boxes = 8 is: 10.23 
-
-3 .  MI train for num boxes, num_boxes = 10 is: 9.97 
-
-4 .  MI train for num boxes, num_boxes = 12 is: 9.52 
-
-5 .  MI train for num boxes, num_boxes = 14 is: 9.04 
-
-6 .  MI train for num boxes, num_boxes = 16 is: 9.79 
-
-7 .  MI train for num boxes, num_boxes = 18 is: 9.38 
-
-8 .  MI train for num boxes, num_boxes = 20 is: 10.07 
-
-9 .  MI train for num boxes, num_boxes = 22 is: 9.79 
-
-10 .  MI train for num boxes, num_boxes = 24 is: 9.73 
-
-11 .  MI train for num boxes, num_boxes = 26 is: 9.69 
+2 .  MI train for num boxes, num_boxes = 8 is: 0.14 
 

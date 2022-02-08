@@ -1,6 +1,6 @@
 import mice.main.box_menu
 
-box_runner.max_epochs = 4e4
+box_runner.max_epochs = 5e4
 box_runner.batch_size = 32
 box_runner.freq_print = 1e2
 box_runner.genom = 'sandnet3d'
@@ -9,7 +9,7 @@ box_runner.weight_decay = 1e-4
 box_runner.box_frac = 0.5
 box_runner.window_size = 10
 box_runner.num_samples = 8e2
-box_runner.transfer_epochs = 4e4
+box_runner.transfer_epochs = 5e4
 # box_caller.box_sizes = [6, 8, 10, 12]
 
 box_temp_fig_running.figsize = (12, 6)
@@ -38,8 +38,11 @@ ising_box_runner.window_size = 10
 
 import mice.utils.my_utils
 
+lattices_generator_h5py.num_samples = 4e4
+lattices_generator_h5py.samples_per_snapshot = 1e0
+
 lattices_generator.num_samples = 8e2
-lattices_generator.samples_per_snapshot = 1e0
+lattices_generator.samples_per_snapshot = 1e2
 boxes_maker.flag = 0 # 2 - from data.h5 || 1 - random || 2 - log2 
 logger.mod = 0 # mod 0 : prints both || mod 1 : prints only output || mod 2 : prints only to file
 box_fig.figsize = (12, 6)
@@ -58,20 +61,23 @@ ising_fig.figsize = (12, 6)
 
 import bin.load_data
 
-#300*256=768000
-file_load.number_lines = 768000
+#3000*256=768000
+#400000*256=10240000
+file_load.number_lines = 10240000
 
 #=======================#
 
 import mice.main.entropy_menu
 
-entropy_runner.num_boxes = 4
-entropy_runner.max_epochs = 3e2
-entropy_runner.genom = 'new_fcn'
+entropy_runner.num_boxes = 10
+entropy_runner.max_epochs = 5e4
+entropy_runner.transfer_epochs = 5e4
+entropy_runner.genom = 'sandnet3d'
 entropy_runner.lr = 1e-3
 entropy_runner.weight_decay = 1e-4
-entropy_runner.batch_size = 300
-entropy_runner.freq_print = 1e1
+entropy_runner.batch_size = 32
+entropy_runner.freq_print = 1e2
+entropy_runner.num_samples = 8e2
 
 #=======================#
 
@@ -85,7 +91,7 @@ ising_runner.J = 1
 
 import mice.utils.pytorch_modules
 
-LRScheduler.patience = 500
+LRScheduler.patience = 300
 LRScheduler.min_lr = 1e-4
 LRScheduler.factor = 0.5
 EarlyStopping.patience = 5000

@@ -38,6 +38,7 @@ def box_runner(num_boxes, box_frac, idx, max_epochs, batch_size, freq_print, gen
     PATH = os.path.join(weights_path, genom+'_model_weights.pth')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     R = np.random.RandomState(seed=0)
+
     mi_num_box_dependant = []
     mi_num_box_dependant_valid = []
     sizes = mice.sizer(num_boxes=num_boxes, box_frac=box_frac)
@@ -58,6 +59,8 @@ def box_runner(num_boxes, box_frac, idx, max_epochs, batch_size, freq_print, gen
     axis = int(np.argmax((list_ising[0].shape[1], list_ising[0].shape[2], list_ising[0].shape[3]))) + 1
     cntr = 0
     for epoch in tqdm(range(int(n_epochs))):
+        lattices = mice.lattices_generator(R=R, num_frames=num_frames, num_boxes=num_boxes, sizes=sizes)
+        list_ising = lattices.copy()
         place = random.sample(range(len(list_ising)), k=int(num_samples))
         lattices = np.array(list_ising)[place]
         left_lattices, right_lattices = mice.lattice_splitter(lattices=lattices, axis=axis)
@@ -88,7 +91,7 @@ def box_runner(num_boxes, box_frac, idx, max_epochs, batch_size, freq_print, gen
         train_losses_exp = list(mice.exp_ave(data=train_losses))
         valid_losses_exp = list(mice.exp_ave(data=valid_losses))
 
-        if epoch > 500:
+        if epoch > 1000:
             lr_scheduler(valid_losses_exp[-1])
             early_stopping(valid_losses_exp[-1])
             if early_stopping.early_stop:

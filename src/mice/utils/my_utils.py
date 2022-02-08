@@ -9,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 import sys
 import seaborn as sns
+from tqdm import tqdm
 # from pytorch_lightning import Trainer
 # from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
@@ -278,6 +279,56 @@ def lattices_generator(num_samples, samples_per_snapshot, R, num_frames, num_box
             return lattices
         elif cntr % (samples_per_snapshot) == 0:
             return lattices_generator(R=R, num_frames=num_frames, num_boxes=num_boxes, sizes=sizes, cntr=cntr, lattices=lattices)
+
+@gin.configurable
+def lattices_generator_h5py(num_samples, samples_per_snapshot, R, num_frames, num_boxes, sizes, cntr=0, lattices=None, flag=0):
+    '''
+    Generate the lattices that will be used in our neural net
+    
+    num_samples: number of samples we will have in each epoch
+    samples_per_snapshot: the number of samples to take from each snapshot
+    R: np.random.RandomState
+    num_frames: number of frames we have in the data, from it we will pick 1 frame randomly to take our data from
+    num_boxes: the number of boxes we split our space to
+    sizes: the sizes of the box we are calculating the mutual information to
+    cntr: just a counter
+    lattice: a list we will put the lattices we will construct into
+
+    return:
+    list of lattices we've constracted
+    '''
+  
+    lattices = []
+    x_size, y_size, z_size = sizes
+    num_sample = R.randint(num_frames)
+    my_tensor = mice.boxes_maker(num_boxes=num_boxes, sample=num_sample)  # returns a tensor
+    leny_x = my_tensor.shape[0]
+    leny_y = my_tensor.shape[1]
+    leny_z = my_tensor.shape[2]
+    x_steps = leny_x - x_size
+    y_steps = leny_y - y_size
+    z_steps = leny_z - z_size
+
+    for _ in tqdm(range(int(num_samples))):
+        if x_steps == 0:
+            i = 0
+        else:
+            i = R.randint(0, x_steps+1)
+        if y_steps == 0:
+            j = 0
+        else:
+            j = R.randint(0, y_steps+1)
+        if z_steps == 0:
+            k = 0
+        else:
+            k = R.randint(0, z_steps+1)
+
+        lattices.append(np.expand_dims(my_tensor[i:i+x_size, j:j+y_size, k:k + z_size], axis=0))
+        cntr += 1
+        if cntr % (samples_per_snapshot) == 0:
+            num_sample = R.randint(num_frames)
+            my_tensor = mice.boxes_maker(num_boxes=num_boxes, sample=num_sample)  # returns a tensor
+    return lattices
 
 def lattice_splitter(lattices, axis):
     '''

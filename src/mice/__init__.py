@@ -42,7 +42,8 @@ from mice.utils.my_utils import (
     lin_ave_running,
     loss_lin_ave,
     box_temp_fig_running,
-    box_temp_fig
+    box_temp_fig,
+    lattices_generator_h5py
 )
 
 from mice.main.box_menu import (
