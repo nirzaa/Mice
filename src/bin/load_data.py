@@ -3,8 +3,9 @@ import h5py
 import os
 import gin
 import sys
-my_path = os.path.join('./')
-sys.path.append(my_path)
+from tqdm import tqdm
+# my_path = os.path.join('./')
+# sys.path.append(my_path)
 import mice
 
 @gin.configurable
@@ -21,7 +22,8 @@ def file_load(file_name, number_lines):
     path_data = os.path.join('./', 'data')
 
     with open(os.path.join(path_data, file_name)) as f:
-        lines = [next(f) for x in range(number_lines)]
+        # lines = [next(f) for x in tqdm(range(number_lines))]
+        lines = [f.readline() for x in tqdm(range(number_lines))]
     f.close()
 
     mod265 = np.arange(len(lines)) % 265
