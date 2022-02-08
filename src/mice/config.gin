@@ -69,7 +69,7 @@ file_load.number_lines = 10240000
 
 import mice.main.entropy_menu
 
-entropy_runner.num_boxes = 10
+# entropy_runner.num_boxes = 10
 entropy_runner.max_epochs = 5e4
 entropy_runner.transfer_epochs = 5e4
 entropy_runner.genom = 'sandnet3d'
