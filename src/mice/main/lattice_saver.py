@@ -14,7 +14,11 @@ def lat_saver(num_samples, samples_per_snapshot):
     my_root = int(np.floor(np.log2(num_boxes)))
     my_combinations = list(combinations_with_replacement([2 << expo for expo in range(0, my_root)], 3))
     my_combinations.sort(key=mice.sort_func)
-    for sizes in my_combinations:
+    print('Our combinations are:')
+    for i in my_combinations:
+        print(i)
+    for sizes in tqdm(my_combinations):
+        print(f'Working on {sizes}')
         lattices = []
         x_size, y_size, z_size = sizes
         num_sample = R.randint(num_frames)
