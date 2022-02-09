@@ -4,23 +4,23 @@ We split our space into: 10 boxes.
 We have 10 runs in total
 
 
-0 .  The MI train for (2, 2, 2) box is: 0.01 
+0 .  The MI train for (2, 2, 2) box is: 0.02 
 
-1 .  The MI train for (2, 2, 4) box is: 0.00 
+1 .  The MI train for (2, 2, 4) box is: 0.01 
 
-2 .  The MI train for (2, 2, 8) box is: 0.01 
+2 .  The MI train for (2, 2, 8) box is: 0.00 
 
-3 .  The MI train for (2, 4, 4) box is: 0.01 
+3 .  The MI train for (2, 4, 4) box is: 0.05 
 
-4 .  The MI train for (2, 4, 8) box is: 0.20 
+4 .  The MI train for (2, 4, 8) box is: 0.00 
 
-5 .  The MI train for (4, 4, 4) box is: 0.06 
+5 .  The MI train for (4, 4, 4) box is: 0.42 
 
-6 .  The MI train for (2, 8, 8) box is: 0.37 
+6 .  The MI train for (2, 8, 8) box is: 1.75 
 
-7 .  The MI train for (4, 4, 8) box is: 0.15 
+7 .  The MI train for (4, 4, 8) box is: 0.00 
 
-8 .  The MI train for (4, 8, 8) box is: 0.85 
+8 .  The MI train for (4, 8, 8) box is: 6.43 
 
-9 .  The MI train for (8, 8, 8) box is: 0.86 
+9 .  The MI train for (8, 8, 8) box is: 4.62 
 

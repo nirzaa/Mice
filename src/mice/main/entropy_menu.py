@@ -111,6 +111,8 @@ def entropy_runner(num_boxes, idx, comb, number_combinations, max_epochs, batch_
 
         train_losses_exp = list(mice.exp_ave(data=train_losses))
         valid_losses_exp = list(mice.exp_ave(data=valid_losses))
+        train_losses_exp = list(mice.exp_ave(data=train_losses_exp))
+        valid_losses_exp = list(mice.exp_ave(data=valid_losses_exp))
 
         if epoch > 500:
             lr_scheduler(valid_losses_exp[-1])
@@ -126,6 +128,8 @@ def entropy_runner(num_boxes, idx, comb, number_combinations, max_epochs, batch_
     cntr += 1
     x_labels.append(str((i, j, k)))
     torch.save(model.state_dict(), PATH)
+    train_losses = mice.exp_ave(data=train_losses)
+    valid_losses = mice.exp_ave(data=valid_losses)
     train_losses = mice.exp_ave(data=train_losses)
     valid_losses = mice.exp_ave(data=valid_losses)
     mi_entropy_dependant.append(train_losses[-1])
