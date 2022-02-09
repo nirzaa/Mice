@@ -23,19 +23,36 @@ def file_load(file_name, number_lines):
 
     with open(os.path.join(path_data, file_name)) as f:
         # lines = [next(f) for x in tqdm(range(number_lines))]
+        print('Reading the lines from the file...')
         lines = [f.readline() for x in tqdm(range(number_lines))]
     f.close()
 
     mod265 = np.arange(len(lines)) % 265
     blocks = np.array(lines)[(mod265 <= 264) & (mod265 >= 9)]
     blocks = blocks[:-1]
-    blocks = np.array([np.array(x.split()[2:], dtype=float) for x in blocks])
+    print('Constructing the coordinates of the particles...')
+    blocks = np.array([np.array(x.split()[2:], dtype=float) for x in tqdm(blocks)])
+    
+    mod265 = np.arange(len(lines)) % 265
+    names = np.array(lines)[(mod265 <= 264) & (mod265 >= 9)]
+    names = names[:-1]
+    print('Constructing the names of the particles...')
+    names = np.array([np.array(x.split()[:1], dtype=float) for x in tqdm(names)])
+    
     leny = len(blocks)
     leny_mod = leny // 256
     leny_mod = leny_mod * 256
     blocks = blocks[:leny_mod].reshape((-1, 256, 3))
     blocks = blocks.astype(float)
 
+    leny = len(names)
+    leny_mod = leny // 256
+    leny_mod = leny_mod * 256
+    names = names[:leny_mod].reshape((-1, 256))
+    names = names.astype(int)
+
+    with h5py.File(os.path.join(path_data, 'names.h5'), 'w') as hf:
+        hf.create_dataset('dataset_1', data=names)
     hf = h5py.File(os.path.join(path_data, 'data.h5'), 'w')
     hf.create_dataset('dataset_1', data=blocks)
     hf.close()
