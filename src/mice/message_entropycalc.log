@@ -1,26 +1,28 @@
 ==== log file for the Mutual Information for different box shapes ====
 
-We split our space into: 10 boxes.
-We have 10 runs in total
+We split our space into: 200 boxes.
+We have 11 runs in total
 
 
-0 .  The MI train for (2, 2, 2) box is: 0.02 
+0 .  The MI train for (2, 2, 2) box is: 0.25 
 
-1 .  The MI train for (2, 2, 4) box is: 0.01 
+1 .  The MI train for (2, 2, 4) box is: 0.28 
 
-2 .  The MI train for (2, 2, 8) box is: 0.00 
+2 .  The MI train for (2, 2, 8) box is: 0.31 
 
-3 .  The MI train for (2, 4, 4) box is: 0.05 
+3 .  The MI train for (2, 4, 4) box is: 0.38 
 
-4 .  The MI train for (2, 4, 8) box is: 0.00 
+4 .  The MI train for (2, 2, 16) box is: 0.36 
 
-5 .  The MI train for (4, 4, 4) box is: 0.42 
+5 .  The MI train for (2, 4, 8) box is: 0.45 
 
-6 .  The MI train for (2, 8, 8) box is: 1.75 
+6 .  The MI train for (4, 4, 4) box is: 0.52 
 
-7 .  The MI train for (4, 4, 8) box is: 0.00 
+7 .  The MI train for (2, 2, 32) box is: 0.43 
 
-8 .  The MI train for (4, 8, 8) box is: 6.43 
+8 .  The MI train for (2, 4, 16) box is: 0.46 
 
-9 .  The MI train for (8, 8, 8) box is: 4.62 
+9 .  The MI train for (2, 8, 8) box is: 0.65 
+
+10 .  The MI train for (4, 4, 8) box is: 0.53 
 

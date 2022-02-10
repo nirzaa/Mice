@@ -6,15 +6,16 @@ import pandas as pd
 import os
 from itertools import combinations_with_replacement
 import h5py
+import math
 
-def lat_saver(num_samples, samples_per_snapshot):
+def lat_saver(num_samples, samples_per_snapshot, num_boxes):
     R = np.random.RandomState(seed=0)
     num_frames = mice.frames()
-    num_boxes = 10
     my_root = int(np.floor(np.log2(num_boxes)))
     my_combinations = list(combinations_with_replacement([2 << expo for expo in range(0, my_root)], 3))
     my_combinations.sort(key=mice.sort_func)
     print('Our combinations are:')
+    my_combinations = [i for i in my_combinations if math.prod(i) < 256]
     for i in my_combinations:
         print(i)
     for sizes in tqdm(my_combinations):
@@ -101,4 +102,5 @@ def lat_saver(num_samples, samples_per_snapshot):
 if __name__ == '__main__':
     num_samples = 4e4
     samples_per_snapshot = 1e0
-    lat_saver(num_samples, samples_per_snapshot)
+    num_boxes = 200
+    lat_saver(num_samples, samples_per_snapshot, num_boxes)

@@ -13,6 +13,7 @@ import h5py
 import matplotlib.pyplot as plt
 import numba
 from itertools import combinations_with_replacement
+import math
 
 @gin.configurable
 def entropy_runner(num_boxes, idx, comb, number_combinations, max_epochs, batch_size, freq_print, genom, lr, weight_decay, num_samples, transfer_epochs, window_size=3):
@@ -140,11 +141,12 @@ def entropy_runner(num_boxes, idx, comb, number_combinations, max_epochs, batch_
     return train_losses[-1], valid_losses[-1], genom
 
 if __name__ == '__main__':
-    num_boxes = 10
+    num_boxes = 200
 
     my_root = int(np.floor(np.log2(num_boxes)))
     my_combinations = list(combinations_with_replacement([2 << expo for expo in range(0, my_root)], 3))
     my_combinations.sort(key=mice.sort_func)
+    my_combinations = [i for i in my_combinations if math.prod(i) < 256]
     mice.print_combinations(my_combinations)
     number_combinations = len(my_combinations)
     x_labels = []
