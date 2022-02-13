@@ -142,11 +142,13 @@ def entropy_runner(num_boxes, idx, comb, number_combinations, max_epochs, batch_
 
 if __name__ == '__main__':
     num_boxes = 200
+    limit = 5096
 
     my_root = int(np.floor(np.log2(num_boxes)))
     my_combinations = list(combinations_with_replacement([2 << expo for expo in range(0, my_root)], 3))
     my_combinations.sort(key=mice.sort_func)
-    my_combinations = [i for i in my_combinations if math.prod(i) < 256]
+    my_combinations = [i for i in my_combinations if math.prod(i) < limit]
+    my_combinations.sort(key=lambda x: math.prod(x))
     mice.print_combinations(my_combinations)
     number_combinations = len(my_combinations)
     x_labels = []

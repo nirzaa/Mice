@@ -1,12 +1,12 @@
 ==== log file for the Mutual Information for different box shapes ====
 
 We split our space into: 200 boxes.
-We have 11 runs in total
+We have 46 runs in total
 
 
 0 .  The MI train for (2, 2, 2) box is: 0.25 
 
-1 .  The MI train for (2, 2, 4) box is: 0.28 
+1 .  The MI train for (2, 2, 4) box is: 0.27 
 
 2 .  The MI train for (2, 2, 8) box is: 0.31 
 
@@ -14,9 +14,9 @@ We have 11 runs in total
 
 4 .  The MI train for (2, 2, 16) box is: 0.36 
 
-5 .  The MI train for (2, 4, 8) box is: 0.45 
+5 .  The MI train for (2, 4, 8) box is: 0.44 
 
-6 .  The MI train for (4, 4, 4) box is: 0.52 
+6 .  The MI train for (4, 4, 4) box is: 0.53 
 
 7 .  The MI train for (2, 2, 32) box is: 0.43 
 
@@ -25,4 +25,52 @@ We have 11 runs in total
 9 .  The MI train for (2, 8, 8) box is: 0.65 
 
 10 .  The MI train for (4, 4, 8) box is: 0.53 
+
+11 .  The MI train for (2, 2, 64) box is: 1.32 
+
+12 .  The MI train for (2, 4, 32) box is: 0.54 
+
+13 .  The MI train for (2, 8, 16) box is: 0.62 
+
+14 .  The MI train for (4, 4, 16) box is: 0.52 
+
+15 .  The MI train for (4, 8, 8) box is: 0.70 
+
+16 .  The MI train for (2, 2, 128) box is: 0.00 
+
+17 .  The MI train for (2, 4, 64) box is: 1.48 
+
+18 .  The MI train for (2, 8, 32) box is: 0.68 
+
+19 .  The MI train for (2, 16, 16) box is: 1.03 
+
+20 .  The MI train for (4, 4, 32) box is: 0.60 
+
+21 .  The MI train for (4, 8, 16) box is: 0.07 
+
+22 .  The MI train for (8, 8, 8) box is: 0.95 
+
+23 .  The MI train for (2, 4, 128) box is: 2.46 
+
+24 .  The MI train for (2, 8, 64) box is: 1.91 
+
+25 .  The MI train for (2, 16, 32) box is: 1.04 
+
+26 .  The MI train for (4, 4, 64) box is: 1.70 
+
+27 .  The MI train for (4, 8, 32) box is: 0.83 
+
+28 .  The MI train for (4, 16, 16) box is: 0.76 
+
+29 .  The MI train for (8, 8, 16) box is: 0.42 
+
+30 .  The MI train for (2, 8, 128) box is: nan 
+
+31 .  The MI train for (2, 16, 64) box is: 0.00 
+
+32 .  The MI train for (2, 32, 32) box is: 0.00 
+
+33 .  The MI train for (4, 4, 128) box is: 0.29 
+
+34 .  The MI train for (4, 8, 64) box is: 0.05 
 

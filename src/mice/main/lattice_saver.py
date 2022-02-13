@@ -8,16 +8,16 @@ from itertools import combinations_with_replacement
 import h5py
 import math
 
-def lat_saver(num_samples, samples_per_snapshot, num_boxes):
+def lat_saver(num_samples, samples_per_snapshot, num_boxes, limit):
     R = np.random.RandomState(seed=0)
     num_frames = mice.frames()
     my_root = int(np.floor(np.log2(num_boxes)))
     my_combinations = list(combinations_with_replacement([2 << expo for expo in range(0, my_root)], 3))
-    my_combinations.sort(key=mice.sort_func)
+    my_combinations.sort(key=lambda x: math.prod(x))
     print('Our combinations are:')
-    my_combinations = [i for i in my_combinations if math.prod(i) < 256]
-    for i in my_combinations:
-        print(i)
+    my_combinations = [i for i in my_combinations if math.prod(i) < limit]
+    for cntr, i in enumerate(my_combinations):
+        print(f'{cntr}. {i}')
     for sizes in tqdm(my_combinations):
         print(f'Working on {sizes}')
         lattices = []
@@ -103,4 +103,6 @@ if __name__ == '__main__':
     num_samples = 4e4
     samples_per_snapshot = 1e0
     num_boxes = 200
-    lat_saver(num_samples, samples_per_snapshot, num_boxes)
+    limit = 5096
+
+    lat_saver(num_samples, samples_per_snapshot, num_boxes, limit)

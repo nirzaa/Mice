@@ -771,8 +771,8 @@ def print_combinations(my_combinations):
     None
     '''
     print(f'All of my combinations are:')
-    for i in my_combinations:
-        print(i)
+    for cntr, i in enumerate(my_combinations):
+        print(f'{cntr}. {i}')
     return None
 
 @gin.configurable
